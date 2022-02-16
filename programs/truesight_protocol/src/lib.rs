@@ -7,16 +7,35 @@ declare_id!("Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS");
 pub mod truesight_protocol {
     use super::*;
 
-    pub fn create_prediction(ctx: Context<CreatePrediction>, asset_name: String, direction: u64 ) -> ProgramResult {
+    pub fn create_prediction(ctx: Context<CreatePrediction>, asset_name: String, direction: u64, holdout_period_sec: u64) -> ProgramResult {
         let prediction_record = &mut ctx.accounts.prediction_record;
-        prediction_record.direction = direction;
-        prediction_record.asset = asset_name;
+
+        if(holdout_period_sec > 0) {
+            prediction_record.direction     = direction;
+            prediction_record.expiry_date   = (holdout_period_sec as i64) + Clock::get().unwrap().unix_timestamp;
+            prediction_record.asset         = asset_name;    
+        }
+
+        // TODO: Trigger SPL token transfer to our DAO's vault
         Ok(())
     }
-
+    
     pub fn validate_prediction(ctx: Context<ValidatePrediction>) -> ProgramResult {
         let prediction_record = &mut ctx.accounts.prediction_record;
-        prediction_record.is_correct = true;
+
+        if (
+            Clock::get().unwrap().unix_timestamp > prediction_record.expiry_date
+        ) {
+            prediction_record.validation_date = Clock::get().unwrap().unix_timestamp;
+
+            // TODO: Check against Pyth.Network and determine if prediction was correct
+            prediction_record.is_correct = true;            
+
+            if(prediction_record.is_correct) {
+                // TODO: Trigger SPL token transfer from our DAO's vault    
+            }
+        }
+
         Ok(())
     }
 
@@ -44,4 +63,6 @@ pub struct PredictionRecord {
     pub direction: u64,
     pub asset: String,
     pub is_correct:bool,
+    pub expiry_date: i64,
+    pub validation_date: i64,    
 }
