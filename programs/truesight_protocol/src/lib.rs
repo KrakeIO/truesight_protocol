@@ -1,4 +1,5 @@
 use anchor_lang::prelude::*;
+use anchor_spl::token::*;
 
 // Testing account
 declare_id!("Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS");
@@ -29,7 +30,7 @@ pub mod truesight_protocol {
             prediction_record.asset != "" && 
             Clock::get().unwrap().unix_timestamp > prediction_record.expiry_date
         ) {
-            
+
             prediction_record.validation_date = Clock::get().unwrap().unix_timestamp;
 
             // TODO: Check against Pyth.Network and determine if prediction was correct
