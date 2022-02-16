@@ -48,5 +48,5 @@ wallet = "..."
 ```
 
 #### File directories
-- programs - location of the smart contracts
-- tests - location of the clients
+- programs: location of the smart contracts
+- tests: location of the clients
