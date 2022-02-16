@@ -13,50 +13,25 @@ describe('truesight_protocol', () => {
 
   const program = anchor.workspace.TruesightProtocol as Program<TruesightProtocol>;
 
-
-
-  describe('initialize', () => {
-
-    it('Is initialized!', async () => {
-      // Add your test here.
-      const predictionAccount = anchor.web3.Keypair.generate();
-      
-      await program.rpc.initialize("truesight_protocol", {
-        accounts: {
-          predictionAccount: predictionAccount.publicKey,
-          user: provider.wallet.publicKey,
-          systemProgram: anchor.web3.SystemProgram.programId,
-        },
-        signers: [predictionAccount]
-      });
-
-      const predictionAccountData = await program.account.predictionAccount.fetch(predictionAccount.publicKey);
-
-      assert(predictionAccountData.direction.eq(new anchor.BN(1)))
-      assert(predictionAccountData.asset == "truesight_protocol")
-    });
-
-  });
-
   describe('CreatePrediction', () => {
 
     it('prediction was created', async () => {
       // Add your test here.
-      const predictionAccount = anchor.web3.Keypair.generate();
+      const predictionRecord = anchor.web3.Keypair.generate();
       
       await program.rpc.createPrediction("truesight_protocol", new anchor.BN(11), {
         accounts: {
-          predictionAccount: predictionAccount.publicKey,
+          predictionRecord: predictionRecord.publicKey,
           user: provider.wallet.publicKey,
           systemProgram: anchor.web3.SystemProgram.programId,
         },
-        signers: [predictionAccount]
+        signers: [predictionRecord]
       });
 
-      const predictionAccountData = await program.account.predictionAccount.fetch(predictionAccount.publicKey);
+      const predictionRecordData = await program.account.predictionRecord.fetch(predictionRecord.publicKey);
 
-      assert(predictionAccountData.direction.eq(new anchor.BN(11)))
-      assert(predictionAccountData.asset == "truesight_protocol")
+      assert(predictionRecordData.direction.eq(new anchor.BN(11)))
+      assert(predictionRecordData.asset == "truesight_protocol")
     });
 
   })   
@@ -65,52 +40,30 @@ describe('truesight_protocol', () => {
 
     it('prediction was validated', async () => {
       // Add your test here.
-      const predictionAccount = anchor.web3.Keypair.generate();
+      const predictionRecord = anchor.web3.Keypair.generate();
       
-      await program.rpc.validatePrediction({
+      await program.rpc.createPrediction("truesight_protocol", new anchor.BN(11), {
         accounts: {
-          predictionAccount: predictionAccount.publicKey,
+          predictionRecord: predictionRecord.publicKey,
           user: provider.wallet.publicKey,
           systemProgram: anchor.web3.SystemProgram.programId,
         },
-        signers: [predictionAccount]
+        signers: [predictionRecord]
       });
 
-      const predictionAccountData = await program.account.predictionAccount.fetch(predictionAccount.publicKey);
-      assert(predictionAccountData.isCorrect == true)
+      await program.rpc.validatePrediction({
+        accounts: {
+          predictionRecord: predictionRecord.publicKey,
+          user: provider.wallet.publicKey,
+          systemProgram: anchor.web3.SystemProgram.programId,
+        }
+      });
+
+      const predictionRecordData = await program.account.predictionRecord.fetch(predictionRecord.publicKey);
+      assert(predictionRecordData.isCorrect == true)
     });
 
   })   
   
-  describe('create and validate prediction', () => {
-
-    it('prediction was validated', async () => {
-      // Add your test here.
-      const predictionAccount = anchor.web3.Keypair.generate();
-
-      await program.rpc.createPrediction("truesight_protocol", new anchor.BN(11), {
-        accounts: {
-          predictionAccount: predictionAccount.publicKey,
-          user: provider.wallet.publicKey,
-          systemProgram: anchor.web3.SystemProgram.programId,
-        },
-        signers: [predictionAccount]
-      });
-      
-      await program.rpc.validatePrediction({
-        accounts: {
-          predictionAccount: predictionAccount.publicKey,
-          user: provider.wallet.publicKey,
-          systemProgram: anchor.web3.SystemProgram.programId,
-        },
-        signers: [predictionAccount]
-      });
-
-      const predictionAccountData = await program.account.predictionAccount.fetch(predictionAccount.publicKey);
-      assert(predictionAccountData.isCorrect == true)
-    });
-
-  })   
-
 
 });
