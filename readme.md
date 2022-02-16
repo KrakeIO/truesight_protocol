@@ -5,3 +5,14 @@ This repository holds the smart contracts that support both our game as well as 
 
 ## Codebase Setup
 [Install Anchor and Deps](https://project-serum.github.io/anchor/getting-started/installation.html#install-rust)
+
+### Prerequisites
+- Rust
+- Solana
+- Yarn
+- Anchor
+
+#### Node based dependencies
+```
+yarn install
+```
