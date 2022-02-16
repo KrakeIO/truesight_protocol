@@ -16,8 +16,8 @@ describe('truesight_protocol', () => {
   it('Is initialized!', async () => {
     // Add your test here.
     const predictionAccount = anchor.web3.Keypair.generate();
-
-    await program.rpc.initialize("truesight", {
+    
+    await program.rpc.initialize("truesight_protocol", {
       accounts: {
         predictionAccount: predictionAccount.publicKey,
         user: provider.wallet.publicKey,
@@ -29,6 +29,6 @@ describe('truesight_protocol', () => {
     const predictionAccountData = await program.account.predictionAccount.fetch(predictionAccount.publicKey);
 
     assert(predictionAccountData.direction.eq(new anchor.BN(1)))
-    assert(predictionAccountData.asset == "truesight")
+    assert(predictionAccountData.asset == "truesight_protocol")
   });
 });

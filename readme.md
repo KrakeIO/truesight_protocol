@@ -39,14 +39,22 @@ yarn install
 ```
 
 #### Link your own solana wallet
-Update the following file to point to your own wallet's id.json file
-
--- Anchor.toml
+Update the following file ```Anchor.toml``` 
 
 ```
+// The private key file for your wallet
 wallet = "..."
+
+// The cluster you are pointing to
+cluster = "localnet"
+```
+
+#### Testing
+Make sure your local test validator is not running.
+```
+anchor test
 ```
 
 #### File directories
 - programs: location of the smart contracts
-- tests: location of the clients
+- tests: location of the test files
