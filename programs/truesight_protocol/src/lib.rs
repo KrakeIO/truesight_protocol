@@ -11,13 +11,14 @@ pub mod truesight_protocol {
     pub fn create_prediction(ctx: Context<CreatePrediction>, asset_name: String, direction: u64, holdout_period_sec: u64) -> ProgramResult {
         let prediction_record = &mut ctx.accounts.prediction_record;
 
+        // TODO: Trigger SPL token transfer to our DAO's betting wallet
+
         if(holdout_period_sec >= MINIMUM_HOLDOUT_SEC) {
             prediction_record.direction     = direction;
             prediction_record.expiry_date   = (holdout_period_sec as i64) + Clock::get().unwrap().unix_timestamp;
             prediction_record.asset         = asset_name;    
         }
 
-        // TODO: Trigger SPL token transfer to our DAO's betting wallet
         Ok(())
     }
 
@@ -28,6 +29,7 @@ pub mod truesight_protocol {
             prediction_record.asset != "" && 
             Clock::get().unwrap().unix_timestamp > prediction_record.expiry_date
         ) {
+            
             prediction_record.validation_date = Clock::get().unwrap().unix_timestamp;
 
             // TODO: Check against Pyth.Network and determine if prediction was correct
