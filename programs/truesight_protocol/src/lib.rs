@@ -16,10 +16,10 @@ pub mod truesight_protocol {
             prediction_record.asset         = asset_name;    
         }
 
-        // TODO: Trigger SPL token transfer to our DAO's vault
+        // TODO: Trigger SPL token transfer to our DAO's betting wallet
         Ok(())
     }
-    
+
     pub fn validate_prediction(ctx: Context<ValidatePrediction>) -> ProgramResult {
         let prediction_record = &mut ctx.accounts.prediction_record;
 
@@ -32,7 +32,7 @@ pub mod truesight_protocol {
             prediction_record.is_correct = true;            
 
             if(prediction_record.is_correct) {
-                // TODO: Trigger SPL token transfer from our DAO's vault    
+                // TODO: Trigger SPL token transfer from our DAO's betting wallet
             }
         }
 
