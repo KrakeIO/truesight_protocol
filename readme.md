@@ -9,7 +9,7 @@ This repository holds the smart contracts that support both our game as well as 
 - Yarn
 - Anchor
 
-## Dev Mode
+## Development
 Starting the local validator
 ```
 solana-test-validator
