@@ -25,7 +25,8 @@ Deploying the smart contract
 anchor deploy
 ```
 
-Testing the client
+Testing the client (make sure local validator is not running)
+
 ```
 anchor test
 ```
@@ -47,12 +48,6 @@ wallet = "..."
 
 // The cluster you are pointing to
 cluster = "localnet"
-```
-
-#### Testing
-Make sure your local test validator is not running.
-```
-anchor test
 ```
 
 #### File directories
