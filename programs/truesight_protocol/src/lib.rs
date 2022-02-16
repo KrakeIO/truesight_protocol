@@ -2,6 +2,7 @@ use anchor_lang::prelude::*;
 
 // Testing account
 declare_id!("Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS");
+const MINIMUM_HOLDOUT_SEC: u64 = 5;
 
 #[program]
 pub mod truesight_protocol {
@@ -10,7 +11,7 @@ pub mod truesight_protocol {
     pub fn create_prediction(ctx: Context<CreatePrediction>, asset_name: String, direction: u64, holdout_period_sec: u64) -> ProgramResult {
         let prediction_record = &mut ctx.accounts.prediction_record;
 
-        if(holdout_period_sec > 0) {
+        if(holdout_period_sec >= MINIMUM_HOLDOUT_SEC) {
             prediction_record.direction     = direction;
             prediction_record.expiry_date   = (holdout_period_sec as i64) + Clock::get().unwrap().unix_timestamp;
             prediction_record.asset         = asset_name;    
@@ -24,6 +25,7 @@ pub mod truesight_protocol {
         let prediction_record = &mut ctx.accounts.prediction_record;
 
         if (
+            prediction_record.asset != "" && 
             Clock::get().unwrap().unix_timestamp > prediction_record.expiry_date
         ) {
             prediction_record.validation_date = Clock::get().unwrap().unix_timestamp;
