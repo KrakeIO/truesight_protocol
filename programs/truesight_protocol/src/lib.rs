@@ -38,6 +38,7 @@ pub mod truesight_protocol {
 
             if(prediction_record.is_correct) {
                 // TODO: Trigger SPL token transfer from our DAO's betting wallet
+                // TODO: Write to web3.storage for permanent storage
             }
         }
 
