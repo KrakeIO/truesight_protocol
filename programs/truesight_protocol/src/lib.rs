@@ -62,8 +62,9 @@ pub struct CreatePrediction<'info> {
     pub prediction_record: Account<'info, PredictionRecord>,
 
     #[account(mut)] 
-    // [TODO] Commented out due to errors
+    // [TODO] Figure out how to introduce Pyth Network account address
     pub asset_price_record: Account<'info, pyth_client::PriceInfo>,    
+    
     pub user: Signer<'info>,
     pub system_program: Program<'info, System>,
 }
@@ -73,8 +74,9 @@ pub struct ValidatePrediction<'info> {
     #[account(mut)]
     pub prediction_record: Account<'info, PredictionRecord>,
 
-    // [TODO] Commented out due to errors
+    // [TODO] Figure out how to introduce Pyth Network account address
     pub asset_price_record: Account<'info, pyth_client::PriceInfo>,
+
     pub user: Signer<'info>,
     pub system_program: Program<'info, System>,
 }
