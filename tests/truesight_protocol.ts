@@ -17,8 +17,6 @@ describe('truesight_protocol', () => {
 
     it('creates prediction', async () => {
       const predictionRecord = anchor.web3.Keypair.generate();
-      const holdoutPeriodSec = 100;it('creates prediction', async () => {
-      const predictionRecord = anchor.web3.Keypair.generate();
       const holdoutPeriodSec = 100;
       
       await program.rpc.createPrediction(
@@ -40,6 +38,10 @@ describe('truesight_protocol', () => {
       assert(predictionRecordData.asset == "truesight_protocol");
       assert(predictionRecordData.validationDate.toNumber() == 0);
     });
+
+    it('creates prediction', async () => {
+      const predictionRecord = anchor.web3.Keypair.generate();
+      const holdoutPeriodSec = 100;    
       
       await program.rpc.createPrediction(
         "truesight_protocol", 
