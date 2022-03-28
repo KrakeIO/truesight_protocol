@@ -8,6 +8,10 @@ use pyth_client::{
   load_price
 };
 
+use solana_program::{
+  pubkey::Pubkey
+};
+
 // Testing account
 declare_id!("4338bCaJ8TjcNGmqhQs1FPHZsq2k4PQw15sgNXaEgogw");
 const MINIMUM_HOLDOUT_SEC: u64 = 5;

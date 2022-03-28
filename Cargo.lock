@@ -4085,6 +4085,7 @@ dependencies = [
  "anchor-spl",
  "pyth-client",
  "solana-client",
+ "solana-program",
  "solana-program-test",
  "solana-sdk",
  "spl-token",
