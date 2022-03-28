@@ -39,7 +39,7 @@ describe('truesight_protocol', () => {
       assert(predictionRecordData.validationDate.toNumber() == 0);
     });
 
-    it('creates prediction', async () => {
+    it('creates prediction with entry_price set', async () => {
       const predictionRecord = anchor.web3.Keypair.generate();
       const holdoutPeriodSec = 100;    
       
@@ -61,6 +61,7 @@ describe('truesight_protocol', () => {
       assert(predictionRecordData.direction.eq(new anchor.BN(11)));
       assert(predictionRecordData.asset == "truesight_protocol");
       assert(predictionRecordData.validationDate.toNumber() == 0);
+      assert(predictionRecordData.entry_price == 100);
     });
 
     it('does not create prediction when holdout period is invalid', async () => {
