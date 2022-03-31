@@ -31,7 +31,7 @@ describe('truesight_protocol', () => {
     console.log("validationPrice: " + predictionRecordData.validationPrice.toNumber());
 
     let validationDate = new Date(predictionRecordData.validationDate.toNumber() * 1000);
-    console.log("validationDate: " + validationDate);    
+    console.log("validationDate: " + validationDate);
   }
 
   describe('CreatePrediction', () => {
@@ -243,7 +243,7 @@ describe('truesight_protocol', () => {
       assert(predictionRecordData.isCorrect == false);
       assert(predictionRecordData.validationDate.toNumber() == 0);
 
-      printPredicitonRecord(predictionRecordData);
+      printPredicitonRecord(predictionRecord.publicKey, predictionRecordData);
 
     });
 

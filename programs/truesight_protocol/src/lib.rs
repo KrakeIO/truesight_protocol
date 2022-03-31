@@ -42,14 +42,13 @@ pub mod truesight_protocol {
             for (key, val) in product_account.iter() {
                 if key == "symbol" {
                     prediction_record.asset = val.to_string();
-                } else if key == "product_account" {
-                    prediction_record.pyth_product_public_key = val.to_string();
-                }
+                } 
             }
 
             prediction_record.direction                 = direction;
             prediction_record.expiry_date               = (holdout_period_sec as i64) + Clock::get().unwrap().unix_timestamp;
             
+            prediction_record.pyth_product_public_key   = pyth_product.key.to_string();
             prediction_record.pyth_price_public_key     = pyth_price_info.key.to_string();
             prediction_record.entry_price               = price_account.agg.price;
 
@@ -99,7 +98,7 @@ pub mod truesight_protocol {
 
 #[derive(Accounts)]
 pub struct CreatePrediction<'info> {
-    #[account(init, payer = user, space = 64 + 64)]
+    #[account(init, payer = user, space = 64 + 64 + 64)]
     pub prediction_record: Account<'info, PredictionRecord>,
 
     #[account(mut)] 
