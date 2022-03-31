@@ -26,11 +26,11 @@ describe('truesight_protocol', () => {
     console.log(predictionRecordData);
     console.log("entryPrice: " + predictionRecordData.entryPrice.toNumber());
 
-    let expiryDate = new Date(predictionRecordData.expiryDate.toNumber());
+    let expiryDate = new Date(predictionRecordData.expiryDate.toNumber() * 1000);
     console.log("expiryDate: " + expiryDate);
     console.log("validationPrice: " + predictionRecordData.validationPrice.toNumber());
 
-    let validationDate = new Date(predictionRecordData.validationDate.toNumber());
+    let validationDate = new Date(predictionRecordData.validationDate.toNumber() * 1000);
     console.log("validationDate: " + validationDate);    
   }
 
