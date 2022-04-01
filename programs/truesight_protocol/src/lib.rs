@@ -51,6 +51,8 @@ pub mod truesight_protocol {
             prediction_record.pyth_product_public_key   = pyth_product.key.to_string();
             prediction_record.pyth_price_public_key     = pyth_price_info.key.to_string();
             prediction_record.entry_price               = price_account.agg.price;
+            prediction_record.entry_expo                = price_account.expo;
+            // * u32::pow(10 as u32, price_account.expo as u32) as i64;
 
             // TODO: Trigger SPL token transfer to our DAO's betting wallet            
         }
@@ -72,16 +74,20 @@ pub mod truesight_protocol {
 
                 prediction_record.validation_date   = Clock::get().unwrap().unix_timestamp;
                 prediction_record.validation_price  = price_account.agg.price;
+                prediction_record.validation_expo   = price_account.expo;
+
+                let entry_price          = prediction_record.entry_price as f64 * f64::powf(10.0, prediction_record.entry_expo as f64);
+                let validation_price     = prediction_record.validation_price as f64 * f64::powf(10.0, prediction_record.validation_expo as f64);
 
 
                 prediction_record.is_correct = false;
 
                 if prediction_record.direction == "UP" &&  
-                    prediction_record.entry_price < prediction_record.validation_price {
+                    entry_price < validation_price {
                         prediction_record.is_correct = true;
 
                 } else if prediction_record.direction == "DOWN" &&  
-                    prediction_record.entry_price > prediction_record.validation_price {
+                    entry_price > validation_price {
 
                         prediction_record.is_correct = true;
                 }
@@ -129,5 +135,8 @@ pub struct PredictionRecord {
     pub pyth_price_public_key: String,
     pub validation_date: i64,
     pub entry_price: i64,
+    pub entry_expo: i32,
     pub validation_price: i64,
+    pub validation_expo: i32,
+
 }

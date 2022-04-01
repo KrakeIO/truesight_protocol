@@ -30,6 +30,9 @@ describe('truesight_protocol', () => {
     console.log("expiryDate: " + expiryDate);
     console.log("validationPrice: " + predictionRecordData.validationPrice.toNumber());
 
+    console.log("Entry Expo: " + predictionRecordData.entryExpo);
+    console.log("Validation Expo: " + predictionRecordData.validationExpo);
+
     let validationDate = new Date(predictionRecordData.validationDate.toNumber() * 1000);
     console.log("validationDate: " + validationDate);
   }
@@ -169,6 +172,8 @@ describe('truesight_protocol', () => {
         console.log("Price has not changed");
         assert(predictionRecordData.isCorrect == false);
       }
+
+      printPredicitonRecord(predictionRecord.publicKey, predictionRecordData);
 
     });
 
