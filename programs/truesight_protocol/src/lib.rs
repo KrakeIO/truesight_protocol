@@ -1,5 +1,5 @@
 use anchor_lang::prelude::*;
-use anchor_spl::token::{self, CloseAccount, Mint, SetAuthority, TokenAccount, Transfer};
+use anchor_spl::token::{self, CloseAccount, Mint, SetAuthority, TokenAccount, Transfer, Token};
 use pyth_client::{
     Product,
     Price,
@@ -58,7 +58,9 @@ pub mod truesight_protocol {
             prediction_record.entry_expo                = price_account.expo;
             // * u32::pow(10 as u32, price_account.expo as u32) as i64;
 
-            // TODO: Trigger SPL token transfer to our DAO's betting wallet            
+            // TODO: Trigger SPL token transfer to our DAO's betting wallet     
+
+            ctx.accounts.submit_bid();
         }
 
         Ok(())
@@ -112,13 +114,15 @@ pub struct CreatePrediction<'info> {
     pub prediction_record: Account<'info, PredictionRecord>,
 
     #[account(mut)] 
-    pub asset_record:       UncheckedAccount<'info>,    
-    pub asset_price_record: UncheckedAccount<'info>,
-    pub user:               Signer<'info>,
-    pub token_program:      Account<'info, Mint>,
-    pub user_token_wallet:  Account<'info, TokenAccount>,
-    pub betting_pool:       Account<'info, TokenAccount>,    
-    pub system_program:     Program<'info, System>,
+    pub asset_record:               UncheckedAccount<'info>,    
+    pub asset_price_record:         UncheckedAccount<'info>,
+    pub user:                       Signer<'info>,
+    pub mint:                       Account<'info, Mint>,
+    pub user_token_wallet:          Account<'info, TokenAccount>,
+    pub betting_pool_token_wallet:  Account<'info, TokenAccount>,    
+    pub system_program:             Program<'info, System>,
+    pub token_program:              Program<'info, Token>,
+
 }
 
 #[derive(Accounts)]
@@ -157,7 +161,7 @@ impl<'info> CreatePrediction<'info> {
     fn submit_bid(&self) -> bool {
         let sender              = &self.user;
         let sender_tokens       = &self.user_token_wallet;
-        let recipient_tokens    = &self.betting_pool;
+        let recipient_tokens    = &self.betting_pool_token_wallet;
         let token_program       = &self.token_program;
 
         token::transfer(
