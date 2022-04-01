@@ -20,6 +20,7 @@ anchor-lang = "0.19.0"
 anchor-spl = "0.19.0"
 spl-token = {version = "3.2.0", features = ["no-entrypoint"]}
 pyth-client = {version = "0.5.0", features = ["no-entrypoint"]}
+solana-program = "1.8.1"
 
 [dev-dependencies]
 solana-program-test = "1.8.1"

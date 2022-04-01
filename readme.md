@@ -53,3 +53,10 @@ cluster = "localnet"
 #### File directories
 - programs: location of the smart contracts
 - tests: location of the test files
+
+
+#### Mint information
+  - MainNet mint address: 6R98EWBJALzZxtN4iUQwCifuXK9jB7CeX4wRC7d6RBbK
+
+  - DevNet mint address: dUxFDBEsiDHcWULa6Zr9cDHJHg8uy1PAH69aY74oXia
+    - DevNet test token account: 9iyp4DrLuDp2RZrNtzMb1s5FL2qcNcEjHwAYyJY7k4nm
