@@ -8,8 +8,15 @@ describe('truesight_protocol', () => {
   // Pyth Test Accounts on DevNet - TSLA
   //    https://pyth.network/markets/?cluster=devnet#Equity.US.TSLA/USD
 
-  const SolSymbolAccount = new anchor.web3.PublicKey("GaBJpKtnyUbyKe34XuyegR7W98a9PT5cg985G974NY8R");
-  const SolPriceAccount = new anchor.web3.PublicKey("9TaWcpX3kdfdWQQdNtAjW12fNEKdiicmVXuourqn3xJh");  
+  const SolSymbolAccount  = new anchor.web3.PublicKey("GaBJpKtnyUbyKe34XuyegR7W98a9PT5cg985G974NY8R");
+  const SolPriceAccount   = new anchor.web3.PublicKey("9TaWcpX3kdfdWQQdNtAjW12fNEKdiicmVXuourqn3xJh");  
+  const TSDMintAccount    = new anchor.web3.PublicKey("dUxFDBEsiDHcWULa6Zr9cDHJHg8uy1PAH69aY74oXia");  
+
+  // Account where all bids (TSD) are stored
+  const BettingPool       = new anchor.web3.PublicKey("7fHHgY6Rpx63ancGYJKUgtQ6JdzQ3SuLj991KvqHmZu5");  
+
+  // Account where accumulated TSDs from previous loses and DAO contributions are stored
+  const PrizePool         = new anchor.web3.PublicKey("5Bbk3FGwXzLCbPSoiHYtHBwsBfYqndBY8cCg5r3xedvy");  
 
   // Use the defined cluster - change in Anchor.toml 
   const provider = anchor.Provider.env();
@@ -54,6 +61,8 @@ describe('truesight_protocol', () => {
             assetRecord: SolSymbolAccount,
             assetPriceRecord: SolPriceAccount,
             user: provider.wallet.publicKey,
+            token_program: TSDMintAccount,
+            betting_pool: BettingPool,
             systemProgram: anchor.web3.SystemProgram.programId,
           },
           signers: [predictionRecord]
@@ -83,6 +92,8 @@ describe('truesight_protocol', () => {
             assetRecord: SolSymbolAccount,
             assetPriceRecord: SolPriceAccount,
             user: provider.wallet.publicKey,
+            token_program: TSDMintAccount,
+            betting_pool: BettingPool,          
             systemProgram: anchor.web3.SystemProgram.programId,
           },
           signers: [predictionRecord]
@@ -111,6 +122,8 @@ describe('truesight_protocol', () => {
             assetRecord: SolSymbolAccount,
             assetPriceRecord: SolPriceAccount,
             user: provider.wallet.publicKey,
+            token_program: TSDMintAccount,
+            betting_pool: BettingPool,   
             systemProgram: anchor.web3.SystemProgram.programId,
           },
           signers: [predictionRecord]
@@ -140,6 +153,7 @@ describe('truesight_protocol', () => {
             assetRecord: SolSymbolAccount,
             assetPriceRecord: SolPriceAccount,
             user: provider.wallet.publicKey,
+            token_program: TSDMintAccount,            
             systemProgram: anchor.web3.SystemProgram.programId,
           },
           signers: [predictionRecord]
@@ -153,6 +167,7 @@ describe('truesight_protocol', () => {
           assetRecord: SolSymbolAccount,
           assetPriceRecord: SolPriceAccount,
           user: provider.wallet.publicKey,
+          token_program: TSDMintAccount,          
           systemProgram: anchor.web3.SystemProgram.programId,
         }
       });
@@ -191,6 +206,7 @@ describe('truesight_protocol', () => {
             assetRecord: SolSymbolAccount,
             assetPriceRecord: SolPriceAccount,
             user: provider.wallet.publicKey,
+            token_program: TSDMintAccount,            
             systemProgram: anchor.web3.SystemProgram.programId,
           },
           signers: [predictionRecord]
@@ -204,6 +220,7 @@ describe('truesight_protocol', () => {
           assetRecord: SolSymbolAccount,
           assetPriceRecord: SolPriceAccount,
           user: provider.wallet.publicKey,
+          token_program: TSDMintAccount,          
           systemProgram: anchor.web3.SystemProgram.programId,
         }
       });
@@ -229,6 +246,7 @@ describe('truesight_protocol', () => {
             assetRecord: SolSymbolAccount,
             assetPriceRecord: SolPriceAccount,
             user: provider.wallet.publicKey,
+            token_program: TSDMintAccount,            
             systemProgram: anchor.web3.SystemProgram.programId,
           },
           signers: [predictionRecord]
@@ -240,6 +258,7 @@ describe('truesight_protocol', () => {
           predictionRecord: predictionRecord.publicKey,
           assetPriceRecord: SolPriceAccount,
           user: provider.wallet.publicKey,
+          token_program: TSDMintAccount,
           systemProgram: anchor.web3.SystemProgram.programId,
         }
       });

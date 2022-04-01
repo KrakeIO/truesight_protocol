@@ -1,5 +1,5 @@
 use anchor_lang::prelude::*;
-// use anchor_spl::token::*;
+use anchor_spl::token::{self, CloseAccount, Mint, SetAuthority, TokenAccount, Transfer};
 use pyth_client::{
     Product,
     Price,
@@ -14,6 +14,7 @@ use solana_program::{
   pubkey::Pubkey
 };
 
+pub mod error;
 
 // account address where the program is deployed - DevNet and LocalNet
 declare_id!("4338bCaJ8TjcNGmqhQs1FPHZsq2k4PQw15sgNXaEgogw");
@@ -25,19 +26,22 @@ pub mod truesight_protocol {
     use pyth_client;
 
     pub fn create_prediction(ctx: Context<CreatePrediction>, direction: String, holdout_period_sec: u64) -> ProgramResult {
-        let prediction_record   = &mut ctx.accounts.prediction_record;
 
-        // Fetch product information from Pyth.Network
-        let pyth_product                = &ctx.accounts.asset_record;
-        let pyth_product_data           = &pyth_product.try_borrow_data()?;
-        let product_account: Product    = *load_product(pyth_product_data).unwrap();
-
-        // Fetch price information from Pyth.Network
-        let pyth_price_info = &ctx.accounts.asset_price_record;
-        let pyth_price_data = &pyth_price_info.try_borrow_data()?;
-        let price_account: Price = *load_price(pyth_price_data).unwrap();
-
+        ctx.accounts.has_balance();
         if holdout_period_sec >= MINIMUM_HOLDOUT_SEC {
+
+            let prediction_record   = &mut ctx.accounts.prediction_record;
+
+            // Fetch product information from Pyth.Network
+            let pyth_product                = &ctx.accounts.asset_record;
+            let pyth_product_data           = &pyth_product.try_borrow_data()?;
+            let product_account: Product    = *load_product(pyth_product_data).unwrap();
+
+            // Fetch price information from Pyth.Network
+            let pyth_price_info = &ctx.accounts.asset_price_record;
+            let pyth_price_data = &pyth_price_info.try_borrow_data()?;
+            let price_account: Price = *load_price(pyth_price_data).unwrap();
+
 
             for (key, val) in product_account.iter() {
                 if key == "symbol" {
@@ -108,19 +112,22 @@ pub struct CreatePrediction<'info> {
     pub prediction_record: Account<'info, PredictionRecord>,
 
     #[account(mut)] 
-    pub asset_record: UncheckedAccount<'info>,    
+    pub asset_record:       UncheckedAccount<'info>,    
     pub asset_price_record: UncheckedAccount<'info>,
-    pub user: Signer<'info>,
-    pub system_program: Program<'info, System>,
+    pub user:               Signer<'info>,
+    pub token_program:      Account<'info, Mint>,
+    pub user_token_wallet:  Account<'info, TokenAccount>,
+    pub betting_pool:       Account<'info, TokenAccount>,    
+    pub system_program:     Program<'info, System>,
 }
 
 #[derive(Accounts)]
 pub struct ValidatePrediction<'info> {
     #[account(mut)]
-    pub prediction_record: Account<'info, PredictionRecord>,
+    pub prediction_record:  Account<'info, PredictionRecord>,
     pub asset_price_record: UncheckedAccount<'info>,
-    pub user: Signer<'info>,
-    pub system_program: Program<'info, System>,
+    pub user:               Signer<'info>,
+    pub system_program:     Program<'info, System>,
 }
 
 
@@ -140,3 +147,31 @@ pub struct PredictionRecord {
     pub validation_expo: i32,
 
 }
+
+
+impl<'info> CreatePrediction<'info> {
+    fn has_balance (&self) -> bool {
+        return true;
+    }
+
+    fn submit_bid(&self) -> bool {
+        let sender              = &self.user;
+        let sender_tokens       = &self.user_token_wallet;
+        let recipient_tokens    = &self.betting_pool;
+        let token_program       = &self.token_program;
+
+        token::transfer(
+            CpiContext::new(
+                token_program.to_account_info(),
+                Transfer {
+                    from: sender_tokens.to_account_info(),
+                    to: recipient_tokens.to_account_info(),
+                    authority: sender.to_account_info(),
+                },
+            ),
+            1,
+        );
+        return true;
+    }
+}
+
