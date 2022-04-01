@@ -25,7 +25,7 @@ pub mod truesight_protocol {
     use super::*;
     use pyth_client;
 
-    pub fn create_prediction(ctx: Context<CreatePrediction>, direction: String, holdout_period_sec: u64) -> ProgramResult {
+    pub fn create_prediction(ctx: Context<CreatePrediction>, direction: String, holdout_period_sec: u64, bid_amount: u64) -> ProgramResult {
 
         ctx.accounts.has_balance();
         if holdout_period_sec >= MINIMUM_HOLDOUT_SEC {
@@ -60,7 +60,7 @@ pub mod truesight_protocol {
 
             // TODO: Trigger SPL token transfer to our DAO's betting wallet     
 
-            ctx.accounts.submit_bid();
+            ctx.accounts.submit_bid(bid_amount);
         }
 
         Ok(())
@@ -94,8 +94,8 @@ pub mod truesight_protocol {
 
                 } else if prediction_record.direction == "DOWN" &&  
                     entry_price > validation_price {
-
                         prediction_record.is_correct = true;
+
                 }
 
                 if prediction_record.is_correct {
@@ -117,9 +117,16 @@ pub struct CreatePrediction<'info> {
     pub asset_record:               UncheckedAccount<'info>,    
     pub asset_price_record:         UncheckedAccount<'info>,
     pub user:                       Signer<'info>,
+
+    #[account(mut)]
     pub mint:                       Account<'info, Mint>,
+
+    #[account(mut)] 
     pub user_token_wallet:          Account<'info, TokenAccount>,
+
+    #[account(mut)] 
     pub betting_pool_token_wallet:  Account<'info, TokenAccount>,    
+
     pub system_program:             Program<'info, System>,
     pub token_program:              Program<'info, Token>,
 
@@ -158,22 +165,28 @@ impl<'info> CreatePrediction<'info> {
         return true;
     }
 
-    fn submit_bid(&self) -> bool {
+    // Figure out the error: Cross-program invocation with unauthorized signer or writable account 
+    //   Examples: 
+    //      https://stackoverflow.com/questions/71086845/solana-token-transfer-using-anchor
+    //      https://stackoverflow.com/questions/68841171/how-to-sign-token-transaction-in-serum-anchor
+    fn submit_bid(&self, bid_amount: u64) -> bool {
         let sender              = &self.user;
         let sender_tokens       = &self.user_token_wallet;
         let recipient_tokens    = &self.betting_pool_token_wallet;
         let token_program       = &self.token_program;
 
-        token::transfer(
+        let context = Transfer {
+            from:       sender_tokens.to_account_info(),
+            to:         recipient_tokens.to_account_info(),
+            authority:  sender.to_account_info(),
+        };
+
+        token::transfer( 
             CpiContext::new(
                 token_program.to_account_info(),
-                Transfer {
-                    from: sender_tokens.to_account_info(),
-                    to: recipient_tokens.to_account_info(),
-                    authority: sender.to_account_info(),
-                },
+                context
             ),
-            1,
+            bid_amount,
         );
         return true;
     }

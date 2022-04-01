@@ -11,9 +11,8 @@ describe('truesight_protocol', () => {
   const SolSymbolAccount  = new anchor.web3.PublicKey("GaBJpKtnyUbyKe34XuyegR7W98a9PT5cg985G974NY8R");
   const SolPriceAccount   = new anchor.web3.PublicKey("9TaWcpX3kdfdWQQdNtAjW12fNEKdiicmVXuourqn3xJh");  
 
-  const TSDMintAccount        = new anchor.web3.PublicKey("dUxFDBEsiDHcWULa6Zr9cDHJHg8uy1PAH69aY74oXia");  
-  const TokenProgramAccount   = new anchor.web3.PublicKey("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA");  
-  
+  const TSDMintAccount          = new anchor.web3.PublicKey("dUxFDBEsiDHcWULa6Zr9cDHJHg8uy1PAH69aY74oXia");  
+  const TokenProgramAccountID   = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA";
 
   // Account used for testing
   const TestAccount             = new anchor.web3.PublicKey("5iSkxWSbBM3nDYg8T85zCVXSD9baRoDRZuweqxDdYmUY");  
@@ -60,11 +59,13 @@ describe('truesight_protocol', () => {
 
       let predictionRecord = anchor.web3.Keypair.generate();
       let holdoutPeriodSec = 100;
+      let bidAmount = 7;
       let direction = "UP";
       
       await program.rpc.createPrediction(
         direction, 
         new anchor.BN(holdoutPeriodSec), 
+        new anchor.BN(bidAmount),
         {
           accounts: {
             predictionRecord: predictionRecord.publicKey,
@@ -75,7 +76,7 @@ describe('truesight_protocol', () => {
             userTokenWallet: TestAccountTokenWallet,
             bettingPoolTokenWallet: BettingPoolTokenAccount,
             systemProgram: anchor.web3.SystemProgram.programId,
-            tokenProgram: "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+            tokenProgram: TokenProgramAccountID,
           },
           signers: [predictionRecord]
         }
