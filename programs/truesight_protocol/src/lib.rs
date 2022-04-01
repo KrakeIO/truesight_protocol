@@ -27,7 +27,7 @@ pub mod truesight_protocol {
     pub fn create_prediction(ctx: Context<CreatePrediction>, direction: String, holdout_period_sec: u64) -> ProgramResult {
         let prediction_record   = &mut ctx.accounts.prediction_record;
 
-        // Fetch production information from Pyth.Network
+        // Fetch product information from Pyth.Network
         let pyth_product                = &ctx.accounts.asset_record;
         let pyth_product_data           = &pyth_product.try_borrow_data()?;
         let product_account: Product    = *load_product(pyth_product_data).unwrap();
