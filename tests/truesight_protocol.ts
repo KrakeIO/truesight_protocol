@@ -118,7 +118,7 @@ describe('truesight_protocol', () => {
       assert(predictionRecordData.validationDate.toNumber() == 0);
       assert(predictionRecordData.entryPrice > 0);
       assert(predictionRecordData.pythPricePublicKey == "9TaWcpX3kdfdWQQdNtAjW12fNEKdiicmVXuourqn3xJh");
-      assert(predictionRecordData.bidderTokenWalletKey == "AU8dSnsWXxugR4EayhsnwsqFLquZ8CUovrvzfehW9aTG");
+      assert(predictionRecordData.bidderTokenWalletKey == "9iyp4DrLuDp2RZrNtzMb1s5FL2qcNcEjHwAYyJY7k4nm");
       assert(predictionRecordData.bidAmount == 7);
 
       printPredicitonRecord(predictionRecord.publicKey, predictionRecordData);
@@ -156,7 +156,7 @@ describe('truesight_protocol', () => {
       assert(predictionRecordData.validationDate.toNumber() == 0);
       assert(predictionRecordData.entryPrice > 0);
       assert(predictionRecordData.pythPricePublicKey == "9TaWcpX3kdfdWQQdNtAjW12fNEKdiicmVXuourqn3xJh");
-      assert(predictionRecordData.bidderTokenWalletKey == "AU8dSnsWXxugR4EayhsnwsqFLquZ8CUovrvzfehW9aTG");
+      assert(predictionRecordData.bidderTokenWalletKey == "9iyp4DrLuDp2RZrNtzMb1s5FL2qcNcEjHwAYyJY7k4nm");
       assert(predictionRecordData.bidAmount == 7);
     });
 
