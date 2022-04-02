@@ -61,6 +61,8 @@ pub mod truesight_protocol {
 
             // Transfers TSD tokens to our DAO's betting pool
             ctx.accounts.submit_bid(bid_amount);
+
+            // TODO: Transfer ownership of Prediction Record to Betting Pool
         }
 
         Ok(())
@@ -191,10 +193,7 @@ impl<'info> CreatePrediction<'info> {
         return true;
     }
 
-    // Figure out the error: Cross-program invocation with unauthorized signer or writable account 
-    //   Examples: 
-    //      https://stackoverflow.com/questions/71086845/solana-token-transfer-using-anchor
-    //      https://stackoverflow.com/questions/68841171/how-to-sign-token-transaction-in-serum-anchor
+    // Transfers the TSD Token from bidder to our Betting Pool
     fn submit_bid(&self, bid_amount: u64) -> bool {
         let sender              = &self.user;
         let sender_tokens       = &self.user_token_wallet;
