@@ -28,7 +28,7 @@ pub mod truesight_protocol {
 
     pub fn create_prediction(ctx: Context<CreatePrediction>, direction: String, holdout_period_sec: u64, bid_amount: u64) -> ProgramResult {
 
-        if holdout_period_sec >= MINIMUM_HOLDOUT_SEC && ctx.accounts.has_balance(bid_amount) {
+        if holdout_period_sec >= MINIMUM_HOLDOUT_SEC && ctx.accounts.has_enough_funds(bid_amount) {
 
             let prediction_record   = &mut ctx.accounts.prediction_record;
 
@@ -36,17 +36,16 @@ pub mod truesight_protocol {
             let pyth_product                = &ctx.accounts.asset_record;
             let pyth_product_data           = &pyth_product.try_borrow_data()?;
             let product_account: Product    = *load_product(pyth_product_data).unwrap();
-
+            
             // Fetch price information from Pyth.Network
             let pyth_price_info = &ctx.accounts.asset_price_record;
             let pyth_price_data = &pyth_price_info.try_borrow_data()?;
             let price_account: Price = *load_price(pyth_price_data).unwrap();
-
-
+            
             for (key, val) in product_account.iter() {
                 if key == "symbol" {
                     prediction_record.asset = val.to_string();
-                } 
+                }
             }
 
             prediction_record.direction                 = direction;
@@ -63,6 +62,14 @@ pub mod truesight_protocol {
             ctx.accounts.submit_bid(bid_amount);
 
             // TODO: Transfer ownership of Prediction Record to Betting Pool
+
+        // TODO: Throw an error
+        } else if holdout_period_sec < MINIMUM_HOLDOUT_SEC  {
+
+        // TODO: Throw an error
+        } else if !ctx.accounts.has_enough_funds(bid_amount)  {
+
+
         }
 
         Ok(())
@@ -110,7 +117,13 @@ pub mod truesight_protocol {
 
     pub fn checking_it(ctx: Context<CheckingIt>) -> ProgramResult {
         let test_record = &mut ctx.accounts.test_record;
-        test_record.bid_amount = 10 * BID_AMOUNT_EXPONENT;
+        let sender_tokens       = &mut ctx.accounts.user_token_wallet;
+        let recipient_tokens    = &mut ctx.accounts.betting_pool_token_wallet;
+
+        test_record.bid_amount                                  = 10 * BID_AMOUNT_EXPONENT;
+        test_record.bidder_token_wallet_account_amount          = sender_tokens.amount;
+        test_record.betting_pool_token_wallet_account_amount    = recipient_tokens.amount;
+
         Ok(())
     }
 }
@@ -154,6 +167,17 @@ pub struct CheckingIt<'info> {
     #[account(init, payer = user, space = 64 + 64 + 64 + 64)]
     pub test_record:        Account<'info, TestRecord>,
     pub user:               Signer<'info>,
+
+    #[account(mut)]
+    pub mint:                       Account<'info, Mint>,
+
+    #[account(mut)] 
+    pub user_token_wallet:          Account<'info, TokenAccount>,
+
+    #[account(mut)] 
+    pub betting_pool_token_wallet:  Account<'info, TokenAccount>,    
+
+
     pub system_program:     Program<'info, System>,    
 }
 
@@ -180,7 +204,9 @@ pub struct PredictionRecord {
 #[account]
 pub struct TestRecord {
     pub direction: String,
-    pub bid_amount: u64
+    pub bid_amount: u64,
+    pub bidder_token_wallet_account_amount: u64,
+    pub betting_pool_token_wallet_account_amount: u64,
 }
 
 
@@ -188,9 +214,17 @@ pub struct TestRecord {
 
 impl<'info> CreatePrediction<'info> {
 
-    // TODO: reject transaction if there are not enough TSD tokens in the sender's account
-    fn has_balance (&self, bid_amount: u64) -> bool {
-        return true;
+    // Return
+    fn has_enough_funds(&self, bid_amount: u64) -> bool {
+        let sender_tokens       = &self.user_token_wallet;
+        let sender_token_balance = sender_tokens.amount;
+        let actual_bid_amount = bid_amount * BID_AMOUNT_EXPONENT;
+
+        if sender_token_balance > actual_bid_amount {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     // Transfers the TSD Token from bidder to our Betting Pool

@@ -67,6 +67,9 @@ describe('truesight_protocol', () => {
   //       {
   //         accounts: {
   //           testRecord: testRecord.publicKey,
+  //           mint: TSDMintAccount,
+  //           userTokenWallet: TestAccountTokenWallet,
+  //           bettingPoolTokenWallet: BettingPoolTokenAccount,
   //           user: provider.wallet.publicKey,
   //           systemProgram: anchor.web3.SystemProgram.programId,
   //         },
@@ -75,11 +78,13 @@ describe('truesight_protocol', () => {
   //     );
 
   //     let testRecordData = await program.account.testRecord.fetch(testRecord.publicKey);      
-  //     console.log(testRecordData.bidAmount.toNumber())
+  //     console.log("Amount to bid: " + testRecordData.bidAmount.toNumber());
+  //     console.log("Bidder Account Amount: " + testRecordData.bidderTokenWalletAccountAmount.toNumber());
+  //     console.log("Betting Pool Amount: " + testRecordData.bettingPoolTokenWalletAccountAmount.toNumber());
 
   //   });
 
-  // })
+  // });
 
   describe('CreatePrediction', () => {
 
@@ -188,10 +193,39 @@ describe('truesight_protocol', () => {
 
       let predictionRecordData = await program.account.predictionRecord.fetch(predictionRecord.publicKey);
       assert(predictionRecordData.asset != "Equity.US.TSLA/USD");
-      assert(predictionRecordData.validationDate.toNumber() == 0);
     });
 
-  })   
+    it('does not create prediction when the bid amount is above what is current balance in the account', async () => {
+      let predictionRecord = anchor.web3.Keypair.generate();
+      let holdoutPeriodSec = 100;    
+      let bidAmount = 99999999; // 7TSD   
+      let direction = "UP";
+      
+      await program.rpc.createPrediction(
+        direction, 
+        new anchor.BN(holdoutPeriodSec), 
+        new anchor.BN(bidAmount),
+        {
+          accounts: {
+            predictionRecord: predictionRecord.publicKey,
+            assetRecord: SolSymbolAccount,
+            assetPriceRecord: SolPriceAccount,
+            user: provider.wallet.publicKey,
+            mint: TSDMintAccount,
+            userTokenWallet: TestAccountTokenWallet,
+            bettingPoolTokenWallet: BettingPoolTokenAccount,
+            systemProgram: anchor.web3.SystemProgram.programId,
+            tokenProgram: TokenProgramAccountID,
+          },
+          signers: [predictionRecord]
+        }
+      );
+
+      let predictionRecordData = await program.account.predictionRecord.fetch(predictionRecord.publicKey);
+      assert(predictionRecordData.asset != "Equity.US.TSLA/USD");
+    });
+
+  });
 
   describe('ValidatePrediction', () => {
 
@@ -340,7 +374,7 @@ describe('truesight_protocol', () => {
 
     });
 
-  })   
+  });
   
 
 });
