@@ -19,6 +19,7 @@ pub mod error;
 // account address where the program is deployed - DevNet and LocalNet
 declare_id!("4338bCaJ8TjcNGmqhQs1FPHZsq2k4PQw15sgNXaEgogw");
 const MINIMUM_HOLDOUT_SEC: u64 = 5;
+const BID_AMOUNT_EXPONENT: u64 = 1000000000;
 
 #[program]
 pub mod truesight_protocol {
@@ -27,8 +28,7 @@ pub mod truesight_protocol {
 
     pub fn create_prediction(ctx: Context<CreatePrediction>, direction: String, holdout_period_sec: u64, bid_amount: u64) -> ProgramResult {
 
-        ctx.accounts.has_balance();
-        if holdout_period_sec >= MINIMUM_HOLDOUT_SEC {
+        if holdout_period_sec >= MINIMUM_HOLDOUT_SEC && ctx.accounts.has_balance(bid_amount) {
 
             let prediction_record   = &mut ctx.accounts.prediction_record;
 
@@ -52,14 +52,14 @@ pub mod truesight_protocol {
             prediction_record.direction                 = direction;
             prediction_record.expiry_date               = (holdout_period_sec as i64) + Clock::get().unwrap().unix_timestamp;
             
+            prediction_record.bidder_token_wallet_key   = ctx.accounts.user_token_wallet.key().to_string();
             prediction_record.pyth_product_public_key   = pyth_product.key.to_string();
             prediction_record.pyth_price_public_key     = pyth_price_info.key.to_string();
             prediction_record.entry_price               = price_account.agg.price;
             prediction_record.entry_expo                = price_account.expo;
-            // * u32::pow(10 as u32, price_account.expo as u32) as i64;
+            prediction_record.bid_amount                = bid_amount;
 
-            // TODO: Trigger SPL token transfer to our DAO's betting wallet     
-
+            // Transfers TSD tokens to our DAO's betting pool
             ctx.accounts.submit_bid(bid_amount);
         }
 
@@ -85,7 +85,6 @@ pub mod truesight_protocol {
                 let entry_price          = prediction_record.entry_price as f64 * f64::powf(10.0, prediction_record.entry_expo as f64);
                 let validation_price     = prediction_record.validation_price as f64 * f64::powf(10.0, prediction_record.validation_expo as f64);
 
-
                 prediction_record.is_correct = false;
 
                 if prediction_record.direction == "UP" &&  
@@ -106,11 +105,17 @@ pub mod truesight_protocol {
 
         Ok(())
     }
+
+    pub fn checking_it(ctx: Context<CheckingIt>) -> ProgramResult {
+        let test_record = &mut ctx.accounts.test_record;
+        test_record.bid_amount = 10 * BID_AMOUNT_EXPONENT;
+        Ok(())
+    }
 }
 
 #[derive(Accounts)]
 pub struct CreatePrediction<'info> {
-    #[account(init, payer = user, space = 64 + 64 + 64)]
+    #[account(init, payer = user, space = 64 + 64 + 64 + 64)]
     pub prediction_record: Account<'info, PredictionRecord>,
 
     #[account(mut)] 
@@ -139,6 +144,15 @@ pub struct ValidatePrediction<'info> {
     pub asset_price_record: UncheckedAccount<'info>,
     pub user:               Signer<'info>,
     pub system_program:     Program<'info, System>,
+    pub token_program:      Program<'info, Token>,
+}
+
+#[derive(Accounts)]
+pub struct CheckingIt<'info> {
+    #[account(init, payer = user, space = 64 + 64 + 64 + 64)]
+    pub test_record:        Account<'info, TestRecord>,
+    pub user:               Signer<'info>,
+    pub system_program:     Program<'info, System>,    
 }
 
 
@@ -149,6 +163,7 @@ pub struct PredictionRecord {
     pub asset: String,
     pub is_correct:bool,
     pub expiry_date: i64,
+    pub bidder_token_wallet_key: String,
     pub pyth_product_public_key: String,
     pub pyth_price_public_key: String,
     pub validation_date: i64,
@@ -156,12 +171,23 @@ pub struct PredictionRecord {
     pub entry_expo: i32,
     pub validation_price: i64,
     pub validation_expo: i32,
+    pub bid_amount: u64,
 
 }
 
+#[account]
+pub struct TestRecord {
+    pub direction: String,
+    pub bid_amount: u64
+}
+
+
+
 
 impl<'info> CreatePrediction<'info> {
-    fn has_balance (&self) -> bool {
+
+    // TODO: reject transaction if there are not enough TSD tokens in the sender's account
+    fn has_balance (&self, bid_amount: u64) -> bool {
         return true;
     }
 
@@ -175,6 +201,9 @@ impl<'info> CreatePrediction<'info> {
         let recipient_tokens    = &self.betting_pool_token_wallet;
         let token_program       = &self.token_program;
 
+        // let actual_bid_amount = bid_amount * u64::pow(10, BID_AMOUNT_EXPONENT);
+        let actual_bid_amount = bid_amount * BID_AMOUNT_EXPONENT;
+
         let context = Transfer {
             from:       sender_tokens.to_account_info(),
             to:         recipient_tokens.to_account_info(),
@@ -186,8 +215,9 @@ impl<'info> CreatePrediction<'info> {
                 token_program.to_account_info(),
                 context
             ),
-            bid_amount,
+            actual_bid_amount,
         );
+
         return true;
     }
 }
