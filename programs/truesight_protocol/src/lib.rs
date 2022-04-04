@@ -28,7 +28,13 @@ pub mod truesight_protocol {
 
     pub fn create_prediction(ctx: Context<CreatePrediction>, direction: String, holdout_period_sec: u64, bid_amount: u64) -> ProgramResult {
 
-        if holdout_period_sec >= MINIMUM_HOLDOUT_SEC && ctx.accounts.has_enough_funds(bid_amount) {
+        if holdout_period_sec < MINIMUM_HOLDOUT_SEC {
+             return Err(error!(ErrorCode::InsufficientHoldOut));
+
+        } else if !ctx.accounts.has_enough_funds(bid_amount) {
+             return Err(error!(ErrorCode::InsufficientTSD));
+
+        } else if holdout_period_sec >= MINIMUM_HOLDOUT_SEC && ctx.accounts.has_enough_funds(bid_amount) {
 
             let prediction_record   = &mut ctx.accounts.prediction_record;
 
@@ -128,6 +134,10 @@ pub mod truesight_protocol {
     }
 }
 
+
+
+
+
 #[derive(Accounts)]
 pub struct CreatePrediction<'info> {
     #[account(init, payer = user, space = 64 + 64 + 64 + 64)]
@@ -181,8 +191,6 @@ pub struct CheckingIt<'info> {
     pub system_program:     Program<'info, System>,    
 }
 
-
-
 #[account]
 pub struct PredictionRecord {
     pub direction: String,
@@ -207,6 +215,15 @@ pub struct TestRecord {
     pub bid_amount: u64,
     pub bidder_token_wallet_account_amount: u64,
     pub betting_pool_token_wallet_account_amount: u64,
+}
+
+#[error_code]
+pub enum ErrorCode {
+    #[msg("Insufficient TSD balance.")]
+    InsufficientTSD,
+
+    #[msg("Insufficient holdout period. Holdout period is defined in seconds. Minimum seconds is " + MINIMUM_HOLDOUT_SEC + " seconds")]
+    InsufficientHoldOut,    
 }
 
 
