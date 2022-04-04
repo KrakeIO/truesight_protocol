@@ -28,9 +28,11 @@ pub mod truesight_protocol {
 
     pub fn create_prediction(ctx: Context<CreatePrediction>, direction: String, holdout_period_sec: u64, bid_amount: u64) -> ProgramResult {
 
+        // When holdout period is not long enough
         if holdout_period_sec < MINIMUM_HOLDOUT_SEC {
              return Err(error!(ErrorCode::InsufficientHoldOut));
 
+        // When there are not enough TSD coins in wallet
         } else if !ctx.accounts.has_enough_funds(bid_amount) {
              return Err(error!(ErrorCode::InsufficientTSD));
 
@@ -68,13 +70,6 @@ pub mod truesight_protocol {
             ctx.accounts.submit_bid(bid_amount);
 
             // TODO: Transfer ownership of Prediction Record to Betting Pool
-
-        // TODO: Throw an error
-        } else if holdout_period_sec < MINIMUM_HOLDOUT_SEC  {
-
-        // TODO: Throw an error
-        } else if !ctx.accounts.has_enough_funds(bid_amount)  {
-
 
         }
 
