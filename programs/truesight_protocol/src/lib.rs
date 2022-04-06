@@ -225,7 +225,7 @@ pub enum ErrorCode {
     #[msg("Insufficient TSD balance.")]
     InsufficientTSD,
 
-    #[msg("Insufficient holdout period. Holdout period is defined in seconds. Minimum seconds is " + MINIMUM_HOLDOUT_SEC + " seconds")]
+    #[msg("Insufficient holdout period.")]
     InsufficientHoldOut,    
 }
 

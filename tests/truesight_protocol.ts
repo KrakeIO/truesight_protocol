@@ -174,29 +174,33 @@ describe('truesight_protocol', () => {
 
       const provider = anchor.Provider.env();
       anchor.setProvider(provider);
-      
-      await program.rpc.createPrediction(
-        direction, 
-        new anchor.BN(holdoutPeriodSec), 
-        new anchor.BN(bidAmount),
-        {
-          accounts: {
-            predictionRecord: predictionRecord.publicKey,
-            assetRecord: SolSymbolAccount,
-            assetPriceRecord: SolPriceAccount,
-            user: provider.wallet.publicKey,
-            mint: TSDMintAccount,
-            userTokenWallet: TestAccountTokenWallet,
-            bettingPoolTokenWallet: BettingPoolTokenAccount,
-            systemProgram: anchor.web3.SystemProgram.programId,
-            tokenProgram: TokenProgramAccountID,
-          },
-          signers: [predictionRecord]
-        }
-      );      
 
-      let predictionRecordData = await program.account.predictionRecord.fetch(predictionRecord.publicKey);
-      assert(predictionRecordData.asset != "Equity.US.TSLA/USD");
+      try {
+        await program.rpc.createPrediction(
+          direction, 
+          new anchor.BN(holdoutPeriodSec), 
+          new anchor.BN(bidAmount),
+          {
+            accounts: {
+              predictionRecord: predictionRecord.publicKey,
+              assetRecord: SolSymbolAccount,
+              assetPriceRecord: SolPriceAccount,
+              user: provider.wallet.publicKey,
+              mint: TSDMintAccount,
+              userTokenWallet: TestAccountTokenWallet,
+              bettingPoolTokenWallet: BettingPoolTokenAccount,
+              systemProgram: anchor.web3.SystemProgram.programId,
+              tokenProgram: TokenProgramAccountID,
+            },
+            signers: [predictionRecord]
+          }
+        );      
+
+      } catch(e) {
+        assert(e.msg == "Insufficient holdout period.")
+        assert(e.code == 6001)        
+      }
+      
       
     });
 
@@ -227,8 +231,9 @@ describe('truesight_protocol', () => {
           }
         );
       } catch (e) {
-        let predictionRecordData = await program.account.predictionRecord.fetch(predictionRecord.publicKey);
-        assert(predictionRecordData.asset != "Equity.US.TSLA/USD");
+        assert(e.msg == "Insufficient TSD balance.");
+        console.log(e)        
+        assert(e.code == 6000);
       }
       
     });
@@ -295,11 +300,10 @@ describe('truesight_protocol', () => {
     });
 
     it('does not validate prediction if original prediction was invalid', async () => {
-      const predictionRecord = anchor.web3.Keypair.generate();
+      const predictionRecord = anchor.web3.Keypair.generate();      
       const holdoutPeriodSec = 0;
       let bidAmount = 7; // 7TSD   
       let direction = "UP";
-
 
       try {
         await program.rpc.createPrediction(
@@ -322,9 +326,6 @@ describe('truesight_protocol', () => {
           }
         );
         await new Promise((r) => setTimeout(r, 6000));
-
-
-
         await program.rpc.validatePrediction({
           accounts: {
             predictionRecord: predictionRecord.publicKey,
@@ -336,10 +337,8 @@ describe('truesight_protocol', () => {
         });
 
       } catch (e) {
-        const predictionRecordData = await program.account.predictionRecord.fetch(predictionRecord.publicKey);
-        assert(predictionRecordData.asset != "Equity.US.TSLA/USD");
-        assert(predictionRecordData.isCorrect == false);
-        assert(predictionRecordData.validationDate.toNumber() == 0);
+        assert(e.msg == 'Insufficient holdout period.')
+        assert(e.code == 6001)
       }
 
     });
@@ -383,7 +382,7 @@ describe('truesight_protocol', () => {
       let predictionRecordData = await program.account.predictionRecord.fetch(predictionRecord.publicKey);     
       assert(predictionRecordData.isCorrect == false);
       assert(predictionRecordData.validationDate.toNumber() == 0);
-
+      
       printPredicitonRecord(predictionRecord.publicKey, predictionRecordData);
 
     });
