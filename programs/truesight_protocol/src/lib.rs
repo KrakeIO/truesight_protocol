@@ -17,7 +17,7 @@ use solana_program::{
 pub mod error;
 
 // account address where the program is deployed - DevNet and LocalNet
-declare_id!("4338bCaJ8TjcNGmqhQs1FPHZsq2k4PQw15sgNXaEgogw");
+declare_id!("6nDKKqTvzw3JNG1GmtWFSGwC1ZGuvzi5bZyXq2X2P9vx");
 const MINIMUM_HOLDOUT_SEC: u64 = 5;
 const BID_AMOUNT_EXPONENT: u64 = 1000000000;
 
@@ -135,7 +135,7 @@ pub mod truesight_protocol {
 
 #[derive(Accounts)]
 pub struct CreatePrediction<'info> {
-    #[account(mut)]
+    #[account(init, payer = user, space = 512)]
     pub prediction_record: Account<'info, PredictionRecord>,
 
     #[account(mut)] 
@@ -143,6 +143,8 @@ pub struct CreatePrediction<'info> {
     pub asset_record:               UncheckedAccount<'info>,    
     /// CHECK: This is not dangerous because we don't read or write from this account
     pub asset_price_record:         UncheckedAccount<'info>,
+
+    #[account(mut)] 
     pub user:                       Signer<'info>,
 
     #[account(mut)]
@@ -163,7 +165,7 @@ pub struct CreatePrediction<'info> {
 pub struct ValidatePrediction<'info> {
     #[account(mut)]
     pub prediction_record:  Account<'info, PredictionRecord>,
-    
+
     /// CHECK: This is not dangerous because we don't read or write from this account
     pub asset_price_record: UncheckedAccount<'info>,
     pub user:               Signer<'info>,
@@ -173,8 +175,10 @@ pub struct ValidatePrediction<'info> {
 
 #[derive(Accounts)]
 pub struct CheckingIt<'info> {
-    #[account(mut)]
+    #[account(init, payer = user, space = 512)]
     pub test_record:        Account<'info, TestRecord>,
+
+    #[account(mut)] 
     pub user:               Signer<'info>,
 
     #[account(mut)]

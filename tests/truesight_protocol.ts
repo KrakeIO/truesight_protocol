@@ -171,35 +171,9 @@ describe('truesight_protocol', () => {
       let bidAmount = 7; // 7TSD   
       let direction = "UP";
       
-      await program.rpc.createPrediction(
-        direction, 
-        new anchor.BN(holdoutPeriodSec), 
-        new anchor.BN(bidAmount),
-        {
-          accounts: {
-            predictionRecord: predictionRecord.publicKey,
-            assetRecord: SolSymbolAccount,
-            assetPriceRecord: SolPriceAccount,
-            user: provider.wallet.publicKey,
-            mint: TSDMintAccount,
-            userTokenWallet: TestAccountTokenWallet,
-            bettingPoolTokenWallet: BettingPoolTokenAccount,
-            systemProgram: anchor.web3.SystemProgram.programId,
-            tokenProgram: TokenProgramAccountID,
-          },
-          signers: [predictionRecord]
-        }
-      );
 
-      let predictionRecordData = await program.account.predictionRecord.fetch(predictionRecord.publicKey);
-      assert(predictionRecordData.asset != "Equity.US.TSLA/USD");
-    });
-
-    it('does not create prediction when the bid amount is above what is current balance in the account', async () => {
-      let predictionRecord = anchor.web3.Keypair.generate();
-      let holdoutPeriodSec = 100;    
-      let bidAmount = 99999999; // 7TSD   
-      let direction = "UP";
+      const provider = anchor.Provider.env();
+      anchor.setProvider(provider);
       
       await program.rpc.createPrediction(
         direction, 
@@ -219,10 +193,44 @@ describe('truesight_protocol', () => {
           },
           signers: [predictionRecord]
         }
-      );
+      );      
 
       let predictionRecordData = await program.account.predictionRecord.fetch(predictionRecord.publicKey);
       assert(predictionRecordData.asset != "Equity.US.TSLA/USD");
+      
+    });
+
+    it('does not create prediction when the bid amount is above what is current balance in the account', async () => {
+      let predictionRecord = anchor.web3.Keypair.generate();
+      let holdoutPeriodSec = 100;    
+      let bidAmount = 99999999; // 7TSD   
+      let direction = "UP";
+
+      try {
+        await program.rpc.createPrediction(
+          direction, 
+          new anchor.BN(holdoutPeriodSec), 
+          new anchor.BN(bidAmount),
+          {
+            accounts: {
+              predictionRecord: predictionRecord.publicKey,
+              assetRecord: SolSymbolAccount,
+              assetPriceRecord: SolPriceAccount,
+              user: provider.wallet.publicKey,
+              mint: TSDMintAccount,
+              userTokenWallet: TestAccountTokenWallet,
+              bettingPoolTokenWallet: BettingPoolTokenAccount,
+              systemProgram: anchor.web3.SystemProgram.programId,
+              tokenProgram: TokenProgramAccountID,
+            },
+            signers: [predictionRecord]
+          }
+        );
+      } catch (e) {
+        let predictionRecordData = await program.account.predictionRecord.fetch(predictionRecord.publicKey);
+        assert(predictionRecordData.asset != "Equity.US.TSLA/USD");
+      }
+      
     });
 
   });
@@ -291,42 +299,48 @@ describe('truesight_protocol', () => {
       const holdoutPeriodSec = 0;
       let bidAmount = 7; // 7TSD   
       let direction = "UP";
-      
-      await program.rpc.createPrediction(
-        direction, 
-        new anchor.BN(holdoutPeriodSec), 
-        new anchor.BN(bidAmount),
-        {
+
+
+      try {
+        await program.rpc.createPrediction(
+          direction, 
+          new anchor.BN(holdoutPeriodSec), 
+          new anchor.BN(bidAmount),
+          {
+            accounts: {
+              predictionRecord: predictionRecord.publicKey,
+              assetRecord: SolSymbolAccount,
+              assetPriceRecord: SolPriceAccount,
+              user: provider.wallet.publicKey,
+              mint: TSDMintAccount,
+              userTokenWallet: TestAccountTokenWallet,
+              bettingPoolTokenWallet: BettingPoolTokenAccount,
+              systemProgram: anchor.web3.SystemProgram.programId,
+              tokenProgram: TokenProgramAccountID,
+            },
+            signers: [predictionRecord]
+          }
+        );
+        await new Promise((r) => setTimeout(r, 6000));
+
+
+
+        await program.rpc.validatePrediction({
           accounts: {
             predictionRecord: predictionRecord.publicKey,
-            assetRecord: SolSymbolAccount,
             assetPriceRecord: SolPriceAccount,
             user: provider.wallet.publicKey,
-            mint: TSDMintAccount,
-            userTokenWallet: TestAccountTokenWallet,
-            bettingPoolTokenWallet: BettingPoolTokenAccount,
             systemProgram: anchor.web3.SystemProgram.programId,
-            tokenProgram: TokenProgramAccountID,
-          },
-          signers: [predictionRecord]
-        }
-      );
-      await new Promise((r) => setTimeout(r, 6000));
+            tokenProgram: TokenProgramAccountID,                   
+          }
+        });
 
-      await program.rpc.validatePrediction({
-        accounts: {
-          predictionRecord: predictionRecord.publicKey,
-          assetPriceRecord: SolPriceAccount,
-          user: provider.wallet.publicKey,
-          systemProgram: anchor.web3.SystemProgram.programId,
-          tokenProgram: TokenProgramAccountID,                   
-        }
-      });
-
-      const predictionRecordData = await program.account.predictionRecord.fetch(predictionRecord.publicKey);
-      assert(predictionRecordData.asset != "Equity.US.TSLA/USD");
-      assert(predictionRecordData.isCorrect == false);
-      assert(predictionRecordData.validationDate.toNumber() == 0);
+      } catch (e) {
+        const predictionRecordData = await program.account.predictionRecord.fetch(predictionRecord.publicKey);
+        assert(predictionRecordData.asset != "Equity.US.TSLA/USD");
+        assert(predictionRecordData.isCorrect == false);
+        assert(predictionRecordData.validationDate.toNumber() == 0);
+      }
 
     });
 
