@@ -17,7 +17,7 @@ use solana_program::{
 pub mod error;
 
 // account address where the program is deployed - DevNet and LocalNet
-declare_id!("4338bCaJ8TjcNGmqhQs1FPHZsq2k4PQw15sgNXaEgogw");
+declare_id!("6nDKKqTvzw3JNG1GmtWFSGwC1ZGuvzi5bZyXq2X2P9vx");
 const MINIMUM_HOLDOUT_SEC: u64 = 5;
 const BID_AMOUNT_EXPONENT: u64 = 1000000000;
 
@@ -26,9 +26,17 @@ pub mod truesight_protocol {
     use super::*;
     use pyth_client;
 
-    pub fn create_prediction(ctx: Context<CreatePrediction>, direction: String, holdout_period_sec: u64, bid_amount: u64) -> ProgramResult {
+    pub fn create_prediction(ctx: Context<CreatePrediction>, direction: String, holdout_period_sec: u64, bid_amount: u64) -> Result<()> {
 
-        if holdout_period_sec >= MINIMUM_HOLDOUT_SEC && ctx.accounts.has_enough_funds(bid_amount) {
+        // When holdout period is not long enough
+        if holdout_period_sec < MINIMUM_HOLDOUT_SEC {
+             return Err(error!(ErrorCode::InsufficientHoldOut));
+
+        // When there are not enough TSD coins in wallet
+        } else if !ctx.accounts.has_enough_funds(bid_amount) {
+             return Err(error!(ErrorCode::InsufficientTSD));
+
+        } else if holdout_period_sec >= MINIMUM_HOLDOUT_SEC && ctx.accounts.has_enough_funds(bid_amount) {
 
             let prediction_record   = &mut ctx.accounts.prediction_record;
 
@@ -63,19 +71,12 @@ pub mod truesight_protocol {
 
             // TODO: Transfer ownership of Prediction Record to Betting Pool
 
-        // TODO: Throw an error
-        } else if holdout_period_sec < MINIMUM_HOLDOUT_SEC  {
-
-        // TODO: Throw an error
-        } else if !ctx.accounts.has_enough_funds(bid_amount)  {
-
-
         }
 
         Ok(())
     }
 
-    pub fn validate_prediction(ctx: Context<ValidatePrediction>) -> ProgramResult {
+    pub fn validate_prediction(ctx: Context<ValidatePrediction>) -> Result<()> {
         let prediction_record = &mut ctx.accounts.prediction_record;
 
         // Fetch price information from Pyth.Network
@@ -115,7 +116,7 @@ pub mod truesight_protocol {
         Ok(())
     }
 
-    pub fn checking_it(ctx: Context<CheckingIt>) -> ProgramResult {
+    pub fn checking_it(ctx: Context<CheckingIt>) -> Result<()> {
         let test_record = &mut ctx.accounts.test_record;
         let sender_tokens       = &mut ctx.accounts.user_token_wallet;
         let recipient_tokens    = &mut ctx.accounts.betting_pool_token_wallet;
@@ -128,14 +129,22 @@ pub mod truesight_protocol {
     }
 }
 
+
+
+
+
 #[derive(Accounts)]
 pub struct CreatePrediction<'info> {
-    #[account(init, payer = user, space = 64 + 64 + 64 + 64)]
+    #[account(init, payer = user, space = 512)]
     pub prediction_record: Account<'info, PredictionRecord>,
 
     #[account(mut)] 
+     /// CHECK: This is not dangerous because we don't read or write from this account
     pub asset_record:               UncheckedAccount<'info>,    
+    /// CHECK: This is not dangerous because we don't read or write from this account
     pub asset_price_record:         UncheckedAccount<'info>,
+
+    #[account(mut)] 
     pub user:                       Signer<'info>,
 
     #[account(mut)]
@@ -156,6 +165,8 @@ pub struct CreatePrediction<'info> {
 pub struct ValidatePrediction<'info> {
     #[account(mut)]
     pub prediction_record:  Account<'info, PredictionRecord>,
+
+    /// CHECK: This is not dangerous because we don't read or write from this account
     pub asset_price_record: UncheckedAccount<'info>,
     pub user:               Signer<'info>,
     pub system_program:     Program<'info, System>,
@@ -164,8 +175,10 @@ pub struct ValidatePrediction<'info> {
 
 #[derive(Accounts)]
 pub struct CheckingIt<'info> {
-    #[account(init, payer = user, space = 64 + 64 + 64 + 64)]
+    #[account(init, payer = user, space = 512)]
     pub test_record:        Account<'info, TestRecord>,
+
+    #[account(mut)] 
     pub user:               Signer<'info>,
 
     #[account(mut)]
@@ -180,8 +193,6 @@ pub struct CheckingIt<'info> {
 
     pub system_program:     Program<'info, System>,    
 }
-
-
 
 #[account]
 pub struct PredictionRecord {
@@ -207,6 +218,15 @@ pub struct TestRecord {
     pub bid_amount: u64,
     pub bidder_token_wallet_account_amount: u64,
     pub betting_pool_token_wallet_account_amount: u64,
+}
+
+#[error_code]
+pub enum ErrorCode {
+    #[msg("Insufficient TSD balance.")]
+    InsufficientTSD,
+
+    #[msg("Insufficient holdout period.")]
+    InsufficientHoldOut,    
 }
 
 

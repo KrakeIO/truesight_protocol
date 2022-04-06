@@ -34,6 +34,13 @@ anchor test
 ## Codebase Setup
 [Install Anchor and Deps](https://project-serum.github.io/anchor/getting-started/installation.html#install-rust)
 
+
+#### Upgrading Anchor
+```
+cargo install --git https://github.com/project-serum/anchor --tag v0.23.0 anchor-cli --locked
+
+```
+
 #### Node based dependencies
 ```
 yarn install
