@@ -15,6 +15,11 @@ Starting the local validator
 solana-test-validator
 ```
 
+Switching to account
+```
+solana-keygen recover 'prompt:?key=0/0' --outfile ~/.config/solana/id.json --force
+```
+
 Compiling the smart contract
 ```
 anchor build
@@ -50,31 +55,7 @@ npm i -D @types/node
 yarn install
 ```
 
-## Wallet Environment Setup
 
-Test Player Wallet
-```
-solana-keygen new --outfile "player.json"
-
-# Public Key - 6F3zXV4Kic7VJwvctojfeskyFDP24n9cQL5BEg7YFvJT
-# Private Key location - tests/test_wallets/player.json
-```
-
-Test Betting Pool Wallet
-```
-solana-keygen new --outfile "betting_pool.json"
-
-# Public Key - Ha6KdoiEVc4veZGkJmkhRZnMTayseWnNEd94aekov1Au
-# Private Key location - tests/test_wallets/betting_pool.json
-```
-
-Test Prize Pool Wallet
-```
-solana-keygen new --outfile "prize_pool.json"
-
-# Public Key - 25BWqDfqF7a65hJC833HgP6k2BFJJTgUKPEZya4NDJ84
-# Private Key location - tests/test_wallets/prize_pool.json
-```
 
 #### Link your own solana wallet
 Update the following file ```Anchor.toml``` 
