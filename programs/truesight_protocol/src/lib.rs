@@ -70,7 +70,12 @@ pub mod truesight_protocol {
             ctx.accounts.submit_bid(bid_amount);
 
             // TODO: Transfer ownership of Prediction Record to Betting Pool
-
+            let cpi_accounts = SetAuthority {
+                account_or_mint: ctx.accounts.betting_pool_token_wallet.to_account_info(),
+                current_authority: ctx.accounts.prediction_record.to_account_info(),
+            };
+            let ctx_auth = CpiContext::new(ctx.accounts.token_program.to_account_info(), cpi_accounts);
+            token::set_authority(ctx_auth, AuthorityType::AccountOwner, None)?;
         }
 
         Ok(())
