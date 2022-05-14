@@ -2,10 +2,10 @@ import {
   SolSymbolAccount, SolPriceAccount, 
   TSDMintAccount, TokenProgramAccountID, 
   TestAccount, TestAccountTokenWallet, 
+  PlayerAccount, PlayerAccountTokenWallet,
   BettingPool, BettingPoolTokenAccount, 
   PrizePool, PrizePoolTokenAccount 
-} from './test_accounts_dev';
-
+} from './accounts/test_accounts_dev';
 
 
 console.log(SolSymbolAccount) 

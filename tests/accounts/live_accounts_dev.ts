@@ -8,18 +8,11 @@ export const SolPriceAccount   = new anchor.web3.PublicKey("9TaWcpX3kdfdWQQdNtAj
 export const TSDMintAccount          = new anchor.web3.PublicKey("dUxFDBEsiDHcWULa6Zr9cDHJHg8uy1PAH69aY74oXia");  
 export const TokenProgramAccountID   = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA";
 
-
 // Account used for testing
 export const TestAccount             = new anchor.web3.PublicKey("5iSkxWSbBM3nDYg8T85zCVXSD9baRoDRZuweqxDdYmUY");  
 export const TestAccountTokenWallet  = new anchor.web3.PublicKey("9iyp4DrLuDp2RZrNtzMb1s5FL2qcNcEjHwAYyJY7k4nm");  
 
 // Account used for testing
-export const MintAccount             = new anchor.web3.PublicKey("5iSkxWSbBM3nDYg8T85zCVXSD9baRoDRZuweqxDdYmUY");  
-export const MintAccountTokenWallet  = new anchor.web3.PublicKey("9iyp4DrLuDp2RZrNtzMb1s5FL2qcNcEjHwAYyJY7k4nm");  
-
-
-// Account used for testing
-//   https://stackoverflow.com/questions/68761789/solana-anchor-how-to-test-different-signers-interacting-with-program-functions
 export const PlayerAccount             = new anchor.web3.PublicKey("25mmR3DSSvAxHMynzbHWyu71fK7Z6QopHWPGCVafPdjD");  
 export const PlayerAccountTokenWallet  = new anchor.web3.PublicKey("GmncVDrX9zT8YfVy5bw9bHeaFmexFogn6Vw9aGNd7EdP");  
 

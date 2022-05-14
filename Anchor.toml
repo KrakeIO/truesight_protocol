@@ -5,8 +5,8 @@ truesight_protocol = "6nDKKqTvzw3JNG1GmtWFSGwC1ZGuvzi5bZyXq2X2P9vx"
 url = "https://anchor.projectserum.com"
 
 [provider]
-cluster = "localnet"
-# cluster = "devnet"
+# cluster = "localnet"
+cluster = "devnet"
 wallet = "~/.config/solana/id.json"
 # wallet = "./tests/test_wallets/player.json"
 

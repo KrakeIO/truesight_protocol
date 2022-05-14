@@ -1,4 +1,5 @@
 ## Wallet Environment Setup - LocalNet
+## DOES NOT SUPPORT SPL TOKENS
 
 Test TSD token minting
 ```

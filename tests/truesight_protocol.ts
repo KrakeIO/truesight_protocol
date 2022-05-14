@@ -2,11 +2,10 @@ import {
   SolSymbolAccount, SolPriceAccount, 
   TSDMintAccount, TokenProgramAccountID, 
   TestAccount, TestAccountTokenWallet, 
-  MintAccount, MintAccountTokenWallet,
   PlayerAccount, PlayerAccountTokenWallet,
   BettingPool, BettingPoolTokenAccount, 
   PrizePool, PrizePoolTokenAccount 
-} from './test_accounts_dev';
+} from './accounts/test_accounts_dev';
 
 import * as anchor from '@project-serum/anchor';
 import { Program } from '@project-serum/anchor';
@@ -62,14 +61,14 @@ describe('truesight_protocol', () => {
             user: provider.wallet.publicKey,
             systemProgram: anchor.web3.SystemProgram.programId,
           },
-          signers: [PlayerAccount]
+          signers: [testRecord]
         }
       );
 
-      let testRecordData = await program.account.testRecord.fetch(testRecord.publicKey);      
-      console.log("Amount to bid: " + testRecordData.bidAmount.toNumber());
-      console.log("Bidder Account Amount: " + testRecordData.bidderTokenWalletAccountAmount.toNumber());
-      console.log("Betting Pool Amount: " + testRecordData.bettingPoolTokenWalletAccountAmount.toNumber());
+      // let testRecordData = await program.account.testRecord.fetch(testRecord.publicKey);      
+      // console.log("Amount to bid: " + testRecordData.bidAmount.toNumber());
+      // console.log("Bidder Account Amount: " + testRecordData.bidderTokenWalletAccountAmount.toNumber());
+      // console.log("Betting Pool Amount: " + testRecordData.bettingPoolTokenWalletAccountAmount.toNumber());
 
     });
 
