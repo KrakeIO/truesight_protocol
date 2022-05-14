@@ -1,6 +1,7 @@
 use anchor_lang::prelude::*;
 use anchor_spl::token::{self, CloseAccount, Mint, SetAuthority, Token, TokenAccount, Transfer};
 use pyth_client::{load_mapping, load_price, load_product, Price, PriceInfo, PriceType, Product};
+use spl_token::instruction::AuthorityType;
 
 use solana_program::pubkey::Pubkey;
 
