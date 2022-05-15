@@ -1,11 +1,12 @@
 use anchor_lang::prelude::*;
 use anchor_spl::token::{self, CloseAccount, Mint, SetAuthority, Token, TokenAccount, Transfer};
 use pyth_client::{load_mapping, load_price, load_product, Price, PriceInfo, PriceType, Product};
-use spl_token::instruction::AuthorityType;
 
 use solana_program::pubkey::Pubkey;
 
 pub mod error;
+
+use spl_token::instruction::AuthorityType;
 
 // account address where the program is deployed - DevNet and LocalNet
 declare_id!("6nDKKqTvzw3JNG1GmtWFSGwC1ZGuvzi5bZyXq2X2P9vx");
@@ -65,12 +66,16 @@ pub mod truesight_protocol {
 
             // TODO: Transfer ownership of Prediction Record to Betting Pool
             let cpi_accounts = SetAuthority {
-                account_or_mint: ctx.accounts.betting_pool_token_wallet.to_account_info(),
-                current_authority: ctx.accounts.prediction_record.to_account_info(),
+                current_authority: ctx.accounts.prediction_record.to_account_info().clone(),
+                account_or_mint: ctx
+                    .accounts
+                    .betting_pool_token_wallet
+                    .to_account_info()
+                    .clone(),
             };
-            let ctx_auth =
-                CpiContext::new(ctx.accounts.token_program.to_account_info(), cpi_accounts);
-            token::set_authority(ctx_auth, AuthorityType::AccountOwner, None)?;
+            let token_program = &ctx.accounts.token_program.to_account_info();
+            let cpi_ctx_set_authority = CpiContext::new(token_program.clone(), cpi_accounts);
+            token::set_authority(cpi_ctx_set_authority, AuthorityType::AccountOwner, None)?;
         }
 
         Ok(())
