@@ -18,6 +18,7 @@ pub mod truesight_protocol {
     use super::*;
     use pyth_client;
 
+
     pub fn create_prediction(
         ctx: Context<CreatePrediction>,
         direction: String,
@@ -40,10 +41,12 @@ pub mod truesight_protocol {
             let pyth_product = &ctx.accounts.asset_record;
             let pyth_product_data = &pyth_product.try_borrow_data()?;
             let product_account: Product = *load_product(pyth_product_data).unwrap();
+
             // Fetch price information from Pyth.Network
             let pyth_price_info = &ctx.accounts.asset_price_record;
             let pyth_price_data = &pyth_price_info.try_borrow_data()?;
             let price_account: Price = *load_price(pyth_price_data).unwrap();
+
             for (key, val) in product_account.iter() {
                 if key == "symbol" {
                     prediction_record.asset = val.to_string();
@@ -61,6 +64,7 @@ pub mod truesight_protocol {
             prediction_record.entry_price = price_account.agg.price;
             prediction_record.entry_expo = price_account.expo;
             prediction_record.bid_amount = bid_amount;
+
             // Transfers TSD tokens to our DAO's betting pool
             ctx.accounts.submit_bid(bid_amount);
 
@@ -87,33 +91,35 @@ pub mod truesight_protocol {
         // Fetch price information from Pyth.Network
         let pyth_price_info = &ctx.accounts.asset_price_record;
         let pyth_price_data = &pyth_price_info.try_borrow_data()?;
-        let price_account: Price = *load_price(pyth_price_data).unwrap();
+        let price_account: Price = *load_price(pyth_price_data).unwrap();                
 
-        if prediction_record.asset != ""
-            && Clock::get().unwrap().unix_timestamp > prediction_record.expiry_date
-            && prediction_record.pyth_price_public_key == pyth_price_info.key.to_string()
-        {
-            prediction_record.validation_date = Clock::get().unwrap().unix_timestamp;
-            prediction_record.validation_price = price_account.agg.price;
-            prediction_record.validation_expo = price_account.expo;
+        if prediction_record.asset != "" && 
+            Clock::get().unwrap().unix_timestamp > prediction_record.expiry_date && 
+            prediction_record.pyth_price_public_key == pyth_price_info.key.to_string() {
 
-            let entry_price = prediction_record.entry_price as f64
-                * f64::powf(10.0, prediction_record.entry_expo as f64);
-            let validation_price = prediction_record.validation_price as f64
-                * f64::powf(10.0, prediction_record.validation_expo as f64);
+                prediction_record.validation_date   = Clock::get().unwrap().unix_timestamp;
+                prediction_record.validation_price  = price_account.agg.price;
+                prediction_record.validation_expo   = price_account.expo;
 
-            prediction_record.is_correct = false;
+                let entry_price          = prediction_record.entry_price as f64 * f64::powf(10.0, prediction_record.entry_expo as f64);
+                let validation_price     = prediction_record.validation_price as f64 * f64::powf(10.0, prediction_record.validation_expo as f64);
 
-            if prediction_record.direction == "UP" && entry_price < validation_price {
-                prediction_record.is_correct = true;
-            } else if prediction_record.direction == "DOWN" && entry_price > validation_price {
-                prediction_record.is_correct = true;
-            }
+                prediction_record.is_correct = false;
 
-            if prediction_record.is_correct {
-                // TODO: Trigger SPL token transfer from our DAO's betting wallet
-                // TODO: Write to web3.storage for permanent storage
-            }
+                if prediction_record.direction == "UP" &&  
+                    entry_price < validation_price {
+                        prediction_record.is_correct = true;
+
+                } else if prediction_record.direction == "DOWN" &&  
+                    entry_price > validation_price {
+                        prediction_record.is_correct = true;
+
+                }
+
+                if prediction_record.is_correct {
+                    // TODO: Trigger SPL token transfer from our DAO's betting wallet
+                    // TODO: Write to web3.storage for permanent storage
+                }
         }
 
         Ok(())
@@ -137,6 +143,7 @@ pub struct CreatePrediction<'info> {
     #[account(init, payer = user, space = 512)]
     pub prediction_record: Account<'info, PredictionRecord>,
 
+
     #[account(mut)]
     /// CHECK: This is not dangerous because we don't read or write from this account
     pub asset_record: UncheckedAccount<'info>,
@@ -157,11 +164,13 @@ pub struct CreatePrediction<'info> {
 
     pub system_program: Program<'info, System>,
     pub token_program: Program<'info, Token>,
+
 }
 
 #[derive(Accounts)]
 pub struct ValidatePrediction<'info> {
     #[account(mut)]
+
     pub prediction_record: Account<'info, PredictionRecord>,
 
     /// CHECK: This is not dangerous because we don't read or write from this account
@@ -174,6 +183,7 @@ pub struct ValidatePrediction<'info> {
 #[derive(Accounts)]
 pub struct CheckingIt<'info> {
     #[account(init, payer = user, space = 512)]
+
     pub test_record: Account<'info, TestRecord>,
 
     #[account(mut)]
@@ -189,6 +199,7 @@ pub struct CheckingIt<'info> {
     pub betting_pool_token_wallet: Account<'info, TokenAccount>,
 
     pub system_program: Program<'info, System>,
+
 }
 
 #[account]
@@ -206,6 +217,7 @@ pub struct PredictionRecord {
     pub validation_price: i64,
     pub validation_expo: i32,
     pub bid_amount: u64,
+
 }
 
 #[account]
@@ -241,6 +253,7 @@ impl<'info> CreatePrediction<'info> {
 
     // Transfers the TSD Token from bidder to our Betting Pool
     fn submit_bid(&self, bid_amount: u64) -> bool {
+
         let sender = &self.user;
         let sender_tokens = &self.user_token_wallet;
         let recipient_tokens = &self.betting_pool_token_wallet;
