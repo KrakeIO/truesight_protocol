@@ -11,3 +11,6 @@ wallet = "~/.config/solana/id.json"
 
 [scripts]
 test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts"
+write_prediction = "ts-node ./helpers/write_prediction.ts"
+read_prediction = "ts-node ./helpers/read_prediction.ts"
+run_server = "ts-node ./web_service.ts"

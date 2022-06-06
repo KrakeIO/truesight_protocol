@@ -66,8 +66,8 @@ pub mod truesight_protocol {
             prediction_record.entry_expo                = price_account.expo;
             prediction_record.bid_amount                = bid_amount;
 
-            // Transfers TSD tokens to our DAO's betting pool
-            ctx.accounts.submit_bid(bid_amount);
+            // DISABLED - Transfers TSD tokens to our DAO's betting pool
+            // ctx.accounts.submit_bid(bid_amount);
 
             // TODO: Transfer ownership of Prediction Record to Betting Pool
 
@@ -129,10 +129,6 @@ pub mod truesight_protocol {
     }
 }
 
-
-
-
-
 #[derive(Accounts)]
 pub struct CreatePrediction<'info> {
     #[account(init, payer = user, space = 512)]
@@ -188,8 +184,7 @@ pub struct CheckingIt<'info> {
     pub user_token_wallet:          Account<'info, TokenAccount>,
 
     #[account(mut)] 
-    pub betting_pool_token_wallet:  Account<'info, TokenAccount>,    
-
+    pub betting_pool_token_wallet:  Account<'info, TokenAccount>,
 
     pub system_program:     Program<'info, System>,    
 }
