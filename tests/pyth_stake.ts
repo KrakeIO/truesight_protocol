@@ -27,7 +27,7 @@ describe("pyth_stake", () => {
   it("is wallet funded", async () => {
 
     await provider.connection.confirmTransaction(
-      await provider.connection.requestAirdrop(alice.publicKey, 1000000000),
+      await provider.connection.requestAirdrop(alice.publicKey, 2000000000),
       "confirmed"
     );
 
@@ -35,7 +35,7 @@ describe("pyth_stake", () => {
       alice.publicKey
     );
 
-    assert.strictEqual(1000000000, aliceUserBalance);
+    assert.strictEqual(2000000000, aliceUserBalance);
 
   })
 
@@ -65,7 +65,6 @@ describe("pyth_stake", () => {
       initialMintAmount,
       [alice]
     );
-
     let _aliceTokenAccount = await spl.getAccount(
       provider.connection,
       aliceTokenAccount
@@ -78,6 +77,14 @@ describe("pyth_stake", () => {
 
   it("creates prediction!", async () => {
     // Add your test here.
+
+    const aliceUserBalance = await provider.connection.getBalance(
+      alice.publicKey
+    );
+
+    console.log(aliceUserBalance)
+
+    
 
     const holdoutPeriod = 100;
     const bidAmount = 1000;
@@ -113,7 +120,7 @@ describe("pyth_stake", () => {
     }).signers([alice]).rpc();
 
     const state = await program.account.predictionRecord.fetch(predictionPDA);
-    console.log(state.asset)
+    console.log(state.direction) 
 
     _aliceTokenWallet = await spl.getAccount(
       provider.connection,
@@ -128,4 +135,50 @@ describe("pyth_stake", () => {
 
     console.log("Your transaction signature", tx);
   });
+
+  it("validates prediction", async() => {
+
+    const [predictionPDA, predictionBump] = await anchor.web3.PublicKey.findProgramAddress(
+      [Buffer.from("prediction"), Buffer.from(assetName), alice.publicKey.toBuffer()],
+      program.programId
+    )
+
+    const [bettingPoolPDA, bettingPoolBump] = await anchor.web3.PublicKey.findProgramAddress(
+      [Buffer.from("betting_pool")],
+      program.programId
+    )
+
+    let _aliceTokenWallet = await spl.getAccount(
+      provider.connection,
+      aliceTokenAccount
+    );
+
+    console.log("Amount before staking: ", _aliceTokenWallet.amount.toString());
+    
+    const tx = await program.methods.validatePrediction(assetName, predictionBump, bettingPoolBump, new anchor.BN(500)).accounts({
+      baseAccount: predictionPDA,
+      authority: alice.publicKey,
+      assetRecord: assetRecord,
+      assetPriceRecord: assetPriceRecord,
+      tokenMint: TSDMint,
+      bettingPoolWallet: bettingPoolPDA,
+      walletToDepositTo: aliceTokenAccount,
+      systemProgram: anchor.web3.SystemProgram.programId,
+      tokenProgram: spl.TOKEN_PROGRAM_ID,
+      rent: anchor.web3.SYSVAR_RENT_PUBKEY,
+    }).signers([alice]).rpc();
+
+    const state = await program.account.predictionRecord.fetch(predictionPDA);
+    console.log(state.direction) 
+
+    _aliceTokenWallet = await spl.getAccount(
+      provider.connection,
+      aliceTokenAccount
+    );
+
+    console.log("Amount after staking : ", _aliceTokenWallet.amount.toString());
+
+
+  })
+  
 });
