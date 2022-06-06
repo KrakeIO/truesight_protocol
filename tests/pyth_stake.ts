@@ -2,9 +2,10 @@ import * as anchor from "@project-serum/anchor";
 import { Program } from "@project-serum/anchor";
 import { publicKey } from "@project-serum/anchor/dist/cjs/utils";
 import { PythStake } from "../target/types/pyth_stake";
-import {PublicKey} from '@solana/web3.js'
+import {PublicKey, Keypair} from '@solana/web3.js'
 import * as spl from "@solana/spl-token";
 const assert = require("assert");
+import bs58 from 'bs58';
 
 describe("pyth_stake", () => {
   // Configure the client to use the local cluster.
@@ -19,10 +20,14 @@ describe("pyth_stake", () => {
 
   const alice = anchor.web3.Keypair.generate();
 
+  // const realmAuthority = "XkDizufzXzMMjFmKER8hy9vtr3S7wBy7ZiBsneTSqt7mEKbWf7Qk5pCyVByqj3zA2aZEqqmCmm9iqSQjdWn7jDY";
+
+  // const alice = Keypair.fromSecretKey(new Uint8Array(bs58.decode(realmAuthority)));
+
   let TSDMint: anchor.web3.PublicKey;
   let aliceTokenAccount: anchor.web3.PublicKey; 
 
-  let initialMintAmount = 100000000;
+  let initialMintAmount = 10000;
 
   it("is wallet funded", async () => {
 
@@ -78,12 +83,6 @@ describe("pyth_stake", () => {
   it("creates prediction!", async () => {
     // Add your test here.
 
-    const aliceUserBalance = await provider.connection.getBalance(
-      alice.publicKey
-    );
-
-    console.log(aliceUserBalance)
-
     
 
     const holdoutPeriod = 100;
@@ -95,7 +94,7 @@ describe("pyth_stake", () => {
     )
 
     const [bettingPoolPDA, bettingPoolBump] = await anchor.web3.PublicKey.findProgramAddress(
-      [Buffer.from("betting_pool")],
+      [Buffer.from("betting_pool"), alice.publicKey.toBuffer()],
       program.programId
     )
 
@@ -106,7 +105,7 @@ describe("pyth_stake", () => {
 
     console.log("Amount before staking: ", _aliceTokenWallet.amount.toString());
     
-    const tx = await program.methods.createPrediction(assetName, new anchor.BN(3238769000000), new anchor.BN(holdoutPeriod), new anchor.BN(bidAmount), predictionBump).accounts({
+    const tx = await program.methods.createPrediction(assetName,predictionBump, bettingPoolBump,  new anchor.BN(3238769000000), new anchor.BN(holdoutPeriod), new anchor.BN(bidAmount), ).accounts({
       baseAccount: predictionPDA,
       authority: alice.publicKey,
       assetRecord: assetRecord,
@@ -136,6 +135,24 @@ describe("pyth_stake", () => {
     console.log("Your transaction signature", tx);
   });
 
+  it("Fund the betting pool wallet with some tokens for rewards", async() => {
+
+    const [bettingPoolPDA, bettingPoolBump] = await anchor.web3.PublicKey.findProgramAddress(
+      [Buffer.from("betting_pool"), alice.publicKey.toBuffer()],
+      program.programId
+    )
+
+    await spl.mintTo(
+      provider.connection,
+      alice,
+      TSDMint,
+      bettingPoolPDA,
+      alice.publicKey,
+      initialMintAmount,
+      [alice]
+    );
+  })
+
   it("validates prediction", async() => {
 
     const [predictionPDA, predictionBump] = await anchor.web3.PublicKey.findProgramAddress(
@@ -144,7 +161,7 @@ describe("pyth_stake", () => {
     )
 
     const [bettingPoolPDA, bettingPoolBump] = await anchor.web3.PublicKey.findProgramAddress(
-      [Buffer.from("betting_pool")],
+      [Buffer.from("betting_pool"), alice.publicKey.toBuffer()],
       program.programId
     )
 
@@ -155,7 +172,7 @@ describe("pyth_stake", () => {
 
     console.log("Amount before staking: ", _aliceTokenWallet.amount.toString());
     
-    const tx = await program.methods.validatePrediction(assetName, predictionBump, bettingPoolBump, new anchor.BN(500)).accounts({
+    const tx = await program.methods.validatePrediction(assetName, predictionBump, bettingPoolBump, new anchor.BN(5000)).accounts({
       baseAccount: predictionPDA,
       authority: alice.publicKey,
       assetRecord: assetRecord,

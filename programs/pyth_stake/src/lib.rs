@@ -11,13 +11,18 @@ const POOL_SEED: &'static [u8] = b"betting_pool";
 pub mod pyth_stake {
     use super::*;
 
+    pub fn initialize(ctx: Context<Initialize>, asset_name: String, base_bump: u8, pool_bump: u8) -> Result<()> {
+        Ok(())
+    }
+
     pub fn create_prediction(
         ctx: Context<CreatePrediction>,
         asset_name: String,
+        base_bump: u8, 
+        pool_bump: u8,
         predicted_price: i64,
         holdout_period_sec: u64,
         bid_amount: u64,
-        base_bump: u8,
     ) -> Result<()> {
         let price_account_info = &mut ctx.accounts.asset_price_record;
         let price_feed = load_price_feed_from_account_info( &price_account_info ).unwrap();
@@ -38,7 +43,7 @@ pub mod pyth_stake {
             ctx.accounts.wallet_to_withdraw_from.key();
         ctx.accounts.base_account.pyth_product_public_key = ctx.accounts.asset_record.key();
         ctx.accounts.base_account.pyth_price_public_key = ctx.accounts.asset_price_record.key();
-        // ctx.accounts.base_account.entry_price               = current_price.price;
+        ctx.accounts.base_account.entry_price               = current_price.price;
         ctx.accounts.base_account.validation_price = predicted_price;
         ctx.accounts.base_account.bid_amount = bid_amount;
         ctx.accounts.base_account.is_correct = false;
@@ -109,6 +114,9 @@ pub mod pyth_stake {
             }
         }
 
+        // for testing purposes only
+        parameter.is_correct = true;
+
         if parameter.is_correct {
             let authority_key = ctx.accounts.authority.key();
 
@@ -144,6 +152,28 @@ pub mod pyth_stake {
 
 #[derive(Accounts)]
 #[instruction(asset_name: String)]
+pub struct Initialize<'info> {
+    #[account(init, payer = authority, seeds = [PREDICTION_SEED, asset_name.as_ref(), authority.key().as_ref()], bump, space = 800)]
+    pub base_account: Account<'info, PredictionRecord>,
+    #[account(mut)]
+    pub authority: Signer<'info>,
+    #[account(
+        init, payer = authority,
+        seeds = [POOL_SEED],
+        bump,
+        token::mint=token_mint,
+        token::authority=base_account,
+    )]
+    pub betting_pool_wallet: Account<'info, TokenAccount>,
+    pub token_mint: Account<'info, Mint>,
+    pub token_program: Program<'info, Token>,
+    pub rent: Sysvar<'info, Rent>,
+    pub system_program: Program<'info, System>,
+
+}
+
+#[derive(Accounts)]
+#[instruction(asset_name: String, base_bump: u8, pool_bump: u8)]
 pub struct CreatePrediction<'info> {
     #[account(init, payer = authority, seeds = [PREDICTION_SEED, asset_name.as_ref(), authority.key().as_ref()], bump, space = 800)]
     pub base_account: Account<'info, PredictionRecord>,
@@ -157,7 +187,7 @@ pub struct CreatePrediction<'info> {
     pub asset_price_record: AccountInfo<'info>,
     #[account(
         init, payer = authority,
-        seeds = [POOL_SEED],
+        seeds = [POOL_SEED, authority.key().as_ref()],
         bump,
         token::mint=token_mint,
         token::authority=base_account,
@@ -186,7 +216,7 @@ pub struct ValidatePrediction<'info> {
     pub asset_price_record: AccountInfo<'info>,
     #[account(
         mut,
-        seeds = [POOL_SEED],
+        seeds = [POOL_SEED, authority.key().as_ref()],
         bump = pool_bump,
         token::mint=token_mint,
         token::authority=base_account,
