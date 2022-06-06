@@ -1,0 +1,14 @@
+[features]
+seeds = false
+[programs.devnet]
+pyth_stake = "2iFXrFurDAZwv5HZHebiTgE4p2GoKkokw8F3fjKnPy4s"
+
+[registry]
+url = "https://anchor.projectserum.com"
+
+[provider]
+cluster = "devnet"
+wallet = "/Users/dhruvjain/.config/solana/id.json"
+
+[scripts]
+test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts"
