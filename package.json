@@ -8,6 +8,12 @@
         "ts-mocha": "^8.0.0",
         "@types/mocha": "^9.0.0",
         "typescript": "^4.3.5",
-        "timecop": "0.0.1"
+        "timecop": "0.0.1",
+        "fs": "",
+        "express": "",
+        "body-parser": "",
+        "cookie-parser": "",
+        "multer": "",
+        "q": ""
     }
 }

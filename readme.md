@@ -9,6 +9,9 @@ This repository holds the smart contracts that support both our game as well as 
 - Yarn
 - Anchor
 
+## Deployment
+
+
 ## Development
 Starting the local validator
 ```
@@ -30,6 +33,22 @@ Testing the client (make sure local validator is not running)
 ```
 anchor test
 ```
+
+Running a simple standalone script to write a prediction record
+```
+anchor run write_prediction
+```
+
+Running a simple standalone script to read a prediction record
+```
+anchor run read_prediction
+```
+
+Running a simple web server to allow users the ability to read and write prediction records to the blockchain
+```
+anchor run run_server
+```
+
 
 ## Codebase Setup
 [Install Anchor and Deps](https://project-serum.github.io/anchor/getting-started/installation.html#install-rust)
