@@ -11,6 +11,10 @@ This repository holds the smart contracts that support both our game as well as 
 
 ## Deployment
 
+To deploy secret key at .env at the root location of your project
+```
+HOT_WALLET_SECRET_KEY="YOUR_SECRET_KEY"
+```
 
 ## Development
 Starting the local validator
