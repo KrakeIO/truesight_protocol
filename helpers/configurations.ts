@@ -1,15 +1,22 @@
 import * as anchor from '@project-serum/anchor';
+// import {Connection} from "@solana/web3.js";
 
-const provider = anchor.Provider.env();
+const provider = anchor.AnchorProvider.env();
 anchor.setProvider(provider);
+
+const connection = provider.connection;
+const wallet     = provider.wallet;
 
 const idl = JSON.parse(
   require("fs").readFileSync("./target/idl/truesight_protocol.json", "utf8")
 );  
 
+process.env.private_key;
+
 const programId = new anchor.web3.PublicKey("6nDKKqTvzw3JNG1GmtWFSGwC1ZGuvzi5bZyXq2X2P9vx");
 const program = new anchor.Program(idl, programId);
 
+const TSDMintAddress          = "dUxFDBEsiDHcWULa6Zr9cDHJHg8uy1PAH69aY74oXia"
 const TSDMintAccount          = new anchor.web3.PublicKey("dUxFDBEsiDHcWULa6Zr9cDHJHg8uy1PAH69aY74oXia");  
 const TokenProgramAccountID   = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA";
 
@@ -28,8 +35,10 @@ const PrizePoolTokenAccount   = new anchor.web3.PublicKey("CyTUhGP9DWYWAAsZJW5J7
 
 
 export { 
+  connection,
   program, 
   provider,
+  TSDMintAddress,
   TSDMintAccount,
   TokenProgramAccountID,
   TestAccount,
@@ -37,5 +46,6 @@ export {
   BettingPool,
   BettingPoolTokenAccount,
   PrizePool,
-  PrizePoolTokenAccount
+  PrizePoolTokenAccount,
+  wallet
 };

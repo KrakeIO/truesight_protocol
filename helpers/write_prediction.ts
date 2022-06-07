@@ -1,6 +1,7 @@
 import * as anchor from '@project-serum/anchor';
 import { Program } from '@project-serum/anchor';
 import { TruesightProtocol } from '../target/types/truesight_protocol';
+import Q from 'q'
 
 import { 
   program, 
@@ -32,7 +33,11 @@ function init() {
     holdoutPeriodSec,
     bidAmount,
     direction    
-  );
+
+  ).then( function( predictionRecordData ) {
+    console.log("Prediction record");
+    console.log(predictionRecordData);
+  });
 
 }
 
@@ -43,6 +48,8 @@ function writePrediction(
   bidAmount: number,
   direction: string
 ) {
+
+  let deferred = Q.defer();
 
   let PythSymbolAccount  = new anchor.web3.PublicKey(pyth_symbol_account_address);
   let PythPriceAccount   = new anchor.web3.PublicKey(pyth_price_account_address);  
@@ -71,17 +78,16 @@ function writePrediction(
   ).then(function (result) { 
     console.log("This is the result");
     console.log(arguments); 
-    
-    readByRecord(predictionRecord).then( function( predictionRecordData ) {
-      console.log("Prediction record");
-      console.log(predictionRecordData);
-    });
 
-  }).catch(function (error) { 
-    console.log("This is an error");
-    console.log(arguments); 
+    return readByRecord(predictionRecord)
 
-  });;
+  }).then(function(predictionRecordData) {
+    predictionRecordData["record_address"] = predictionRecord.publicKey.toBase58();
+    deferred.resolve(predictionRecordData);
+
+  });
+
+  return deferred.promise;
 }
 
 // When function is called directly
