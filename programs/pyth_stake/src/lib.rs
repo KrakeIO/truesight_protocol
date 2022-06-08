@@ -1,6 +1,6 @@
 use anchor_lang::prelude::*;
 use anchor_spl::token::{Mint, Token, TokenAccount, Transfer};
-use pyth_sdk_solana::{load_price_feed_from_account_info, PriceFeed};
+use pyth_sdk_solana::{load_price_feed_from_account_info};
 
 declare_id!("2iFXrFurDAZwv5HZHebiTgE4p2GoKkokw8F3fjKnPy4s");
 
@@ -11,15 +11,11 @@ const POOL_SEED: &'static [u8] = b"betting_pool";
 pub mod pyth_stake {
     use super::*;
 
-    pub fn initialize(ctx: Context<Initialize>, asset_name: String, base_bump: u8, pool_bump: u8) -> Result<()> {
-        Ok(())
-    }
-
     pub fn create_prediction(
         ctx: Context<CreatePrediction>,
         asset_name: String,
         base_bump: u8, 
-        pool_bump: u8,
+        _pool_bump: u8,
         predicted_price: i64,
         holdout_period_sec: u64,
         bid_amount: u64,
@@ -88,9 +84,9 @@ pub mod pyth_stake {
 
     pub fn validate_prediction(
         ctx: Context<ValidatePrediction>,
-        asset_name: String,
+        _asset_name: String,
         base_bump: u8,
-        pool_bump: u8,
+        _pool_bump: u8,
         reward: u64
     ) -> Result<()> {
         let parameter = &mut ctx.accounts.base_account;
@@ -152,28 +148,6 @@ pub mod pyth_stake {
 
         Ok(())
     }
-}
-
-#[derive(Accounts)]
-#[instruction(asset_name: String)]
-pub struct Initialize<'info> {
-    #[account(init, payer = authority, seeds = [PREDICTION_SEED, asset_name.as_ref(), authority.key().as_ref()], bump, space = 800)]
-    pub base_account: Account<'info, PredictionRecord>,
-    #[account(mut)]
-    pub authority: Signer<'info>,
-    #[account(
-        init, payer = authority,
-        seeds = [POOL_SEED],
-        bump,
-        token::mint=token_mint,
-        token::authority=base_account,
-    )]
-    pub betting_pool_wallet: Account<'info, TokenAccount>,
-    pub token_mint: Account<'info, Mint>,
-    pub token_program: Program<'info, Token>,
-    pub rent: Sysvar<'info, Rent>,
-    pub system_program: Program<'info, System>,
-
 }
 
 #[derive(Accounts)]
