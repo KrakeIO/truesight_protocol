@@ -20,10 +20,6 @@ describe("pyth_stake", () => {
 
   const alice = anchor.web3.Keypair.generate();
 
-  // const realmAuthority = "XkDizufzXzMMjFmKER8hy9vtr3S7wBy7ZiBsneTSqt7mEKbWf7Qk5pCyVByqj3zA2aZEqqmCmm9iqSQjdWn7jDY";
-
-  // const alice = Keypair.fromSecretKey(new Uint8Array(bs58.decode(realmAuthority)));
-
   let TSDMint: anchor.web3.PublicKey;
   let aliceTokenAccount: anchor.web3.PublicKey; 
 
