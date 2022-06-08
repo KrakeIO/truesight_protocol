@@ -28,6 +28,7 @@ pub mod pyth_stake {
         let price_feed = load_price_feed_from_account_info( &price_account_info ).unwrap();
         let current_price = price_feed.get_current_price().unwrap();
 
+        // checks the direction with the data fetched from pyth which would be used for vaildation
         if current_price.price > predicted_price {
             ctx.accounts.base_account.direction = String::from("DOWN");
         }
@@ -35,6 +36,7 @@ pub mod pyth_stake {
             ctx.accounts.base_account.direction = String::from("UP");
         }
 
+        // The prediction details are stored in the PDA
         ctx.accounts.base_account.asset = asset_name;
         ctx.accounts.base_account.is_correct = false;
         ctx.accounts.base_account.expiry_date =
@@ -51,6 +53,7 @@ pub mod pyth_stake {
         msg!("You can transfer");
         msg!("Transfer is initiated");
 
+        // This is the transfer instruction where the tokens are transfered from the user's wallet to the betting pool wallet
         let authority_key = ctx.accounts.authority.key();
 
         let bump_vector = base_bump.to_le_bytes();
@@ -97,7 +100,7 @@ pub mod pyth_stake {
         let current_price = price_feed.get_current_price().unwrap();
 
 
-
+        // Check if the prediction is true and the status is updated based on which the user is rewarded
         if parameter.direction == "UP" {
             if current_price.price > parameter.validation_price {
                 parameter.is_correct = true;
@@ -114,7 +117,8 @@ pub mod pyth_stake {
             }
         }
 
-        // for testing purposes only
+        // This is only for testing to check the reward is getting transfered from the betting pool wallet to the user wallet
+        // This has to be commented if it is in real time.
         parameter.is_correct = true;
 
         if parameter.is_correct {

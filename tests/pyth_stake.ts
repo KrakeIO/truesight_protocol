@@ -46,6 +46,7 @@ describe("pyth_stake", () => {
 
   it("creates TSD token and token account", async() => {
 
+    // New TSD token is minted and alice is the mint authority
     TSDMint = await spl.createMint(
       provider.connection,
       alice,
@@ -54,6 +55,7 @@ describe("pyth_stake", () => {
       6
     );
 
+    // A token wallet for alice is created where the TSD tokens can be stored
     aliceTokenAccount = await spl.createAccount(
       provider.connection,
       alice,
@@ -88,11 +90,21 @@ describe("pyth_stake", () => {
     const holdoutPeriod = 100;
     const bidAmount = 1000;
 
+    /*  
+    This is a PDA which stands for Program Derived Address.
+    PDA is an account which can store data but doesnt have a private key which doesnt enable it to sign transactions.
+    The owner of the PDA is the program itself.
+    We have used PDA to enable mapping where the seeds from which the PDA is derived is the key and the data which is stored is the value
+
+    So we create a PDA for every prediction and have a seed consisting of a text, asset name and the predictor's public key.
+    So whenever we need to fetch the data, we can derive the PDA by the following seeds and get the data.
+    */
     const [predictionPDA, predictionBump] = await anchor.web3.PublicKey.findProgramAddress(
       [Buffer.from("prediction"), Buffer.from(assetName), alice.publicKey.toBuffer()],
       program.programId
     )
 
+    // The betting pool wallet is a PDA having all the staked tokens.
     const [bettingPoolPDA, bettingPoolBump] = await anchor.web3.PublicKey.findProgramAddress(
       [Buffer.from("betting_pool"), alice.publicKey.toBuffer()],
       program.programId
@@ -104,7 +116,7 @@ describe("pyth_stake", () => {
     );
 
     console.log("Amount before staking: ", _aliceTokenWallet.amount.toString());
-    
+
     const tx = await program.methods.createPrediction(assetName,predictionBump, bettingPoolBump,  new anchor.BN(3238769000000), new anchor.BN(holdoutPeriod), new anchor.BN(bidAmount), ).accounts({
       baseAccount: predictionPDA,
       authority: alice.publicKey,
@@ -137,6 +149,7 @@ describe("pyth_stake", () => {
 
   it("Fund the betting pool wallet with some tokens for rewards", async() => {
 
+    // We are funding the pool wallet with some tokens so we have enough tokens to reward the users
     const [bettingPoolPDA, bettingPoolBump] = await anchor.web3.PublicKey.findProgramAddress(
       [Buffer.from("betting_pool"), alice.publicKey.toBuffer()],
       program.programId
@@ -172,6 +185,7 @@ describe("pyth_stake", () => {
 
     console.log("Amount before staking: ", _aliceTokenWallet.amount.toString());
     
+    // In this instruction we validate the prediction with the pyth network and reward the users only if their prediction is right
     const tx = await program.methods.validatePrediction(assetName, predictionBump, bettingPoolBump, new anchor.BN(5000)).accounts({
       baseAccount: predictionPDA,
       authority: alice.publicKey,
