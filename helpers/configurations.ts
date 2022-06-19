@@ -11,7 +11,6 @@ const idl = JSON.parse(
   require("fs").readFileSync("./target/idl/truesight_protocol.json", "utf8")
 );  
 
-process.env.private_key;
 
 const programId = new anchor.web3.PublicKey("6nDKKqTvzw3JNG1GmtWFSGwC1ZGuvzi5bZyXq2X2P9vx");
 const program = new anchor.Program(idl, programId);
